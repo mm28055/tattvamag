@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tattvamag
 
-## Getting Started
+Personal Hinduism blog — essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, TypeScript)
+- **Tailwind 4**
+- **Neon Postgres** for articles + comments
+- **Vercel** hosting
+- **Cloudflare** DNS + CDN in front
+- Admin uploads Word `.docx` files; **Mammoth** converts to HTML preserving footnotes
+
+## Local setup
 
 ```bash
+# 1) Install
+npm install
+
+# 2) Copy env template and fill in real values
+cp .env.example .env.local
+#    — DATABASE_URL from Neon console
+#    — ADMIN_PASSWORD (any long string you'll type in the admin login)
+#    — ADMIN_SESSION_SECRET (≥ 32 random chars; gen with:)
+#        node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
+
+# 3) Create the database schema (one time)
+node scripts/run-migration.mjs
+
+# 4) Import the 22 existing articles from the scraped JSON (one time)
+node scripts/import-articles.mjs
+
+# 5) Run the dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Pages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Route | Purpose |
+|---|---|
+| `/` | Homepage — day-toggled between Layout A (Variant 1 text-focused) and Layout B (v2 style). Override with `?layout=a` or `?layout=b`. |
+| `/[slug]` | Article page with drop cap + margin footnotes + comments. |
+| `/archive` | Full list with category + tag filters. |
+| `/about` | Bio page. |
+| `/admin/login` | Password login (ADMIN_PASSWORD). |
+| `/admin` | Dashboard — article counts, pending comments. |
+| `/admin/new` | Upload a `.docx` to publish a new article. |
+| `/admin/comments` | Moderate comments (approve / delete). |
 
-## Learn More
+## Publishing workflow
 
-To learn more about Next.js, take a look at the following resources:
+1. Write the article in Microsoft Word. Use real footnotes (Insert → Footnote).
+2. Go to `/admin/new` (after signing in at `/admin/login`).
+3. Drag in the `.docx` + optional cover image, fill in title / subtitle / category / tags.
+4. **Publish** → article is live immediately at `/[slug]`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Comments
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Anyone can submit a comment on an article. Comments are **pending moderation** — they don't appear on the site until you approve them in `/admin/comments`. Spam defenses:
 
-## Deploy on Vercel
+- Honeypot field (invisible input that bots auto-fill)
+- Per-IP rate limit (5 / hour)
+- Link-count limit (max 3 URLs per comment)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Migration from WordPress
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The original 22 WordPress articles were scraped via `../migration/scrape.mjs`. Scraped JSON lives in `src/data/*.json` as a source-of-truth backup. `scripts/import-articles.mjs` loads them into Neon.
+
+## Deployment
+
+Pushing to `main` auto-deploys to Vercel production. Preview deploys run for every PR. Environment variables live in the Vercel project settings.

@@ -11,6 +11,7 @@ import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage } from "@/lib/r2";
 import mammoth from "mammoth";
+import { marked } from "marked";
 
 export const runtime = "nodejs";
 
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
 
   const form = await req.formData();
   const file = form.get("file") as File | null;
+  const markdownBody = String(form.get("markdownBody") || "").trim();
   const coverImage = form.get("coverImage") as File | null;
   const title = String(form.get("title") || "").trim();
   const subtitle = String(form.get("subtitle") || "").trim();
@@ -56,59 +58,63 @@ export async function POST(req: Request) {
   const illustrator = String(form.get("illustrator") || "").trim();
   const customSlug = String(form.get("slug") || "").trim();
 
-  if (!file) return NextResponse.json({ error: "file is required" }, { status: 400 });
+  // Require either a .docx upload OR typed markdown body (new: inline composer).
+  if (!file && !markdownBody) {
+    return NextResponse.json({ error: "Upload a .docx or type a body in markdown." }, { status: 400 });
+  }
   if (!title) return NextResponse.json({ error: "title is required" }, { status: 400 });
   if (!categorySlug || !CATEGORIES[categorySlug]) {
     return NextResponse.json({ error: "category is required" }, { status: 400 });
   }
 
-  // ── Convert .docx to HTML
-  const buf = Buffer.from(await file.arrayBuffer());
-  const result = await mammoth.convertToHtml(
-    { buffer: buf },
-    {
-      // Map common Word styles to semantic HTML
-      styleMap: [
-        "p[style-name='Title'] => h1",
-        "p[style-name='Heading 1'] => h2",
-        "p[style-name='Heading 2'] => h3",
-        "p[style-name='Heading 3'] => h4",
-        "p[style-name='Block Text'] => blockquote > p",
-        "p[style-name='Quote'] => blockquote > p",
-      ],
-    },
-  );
-
-  // Mammoth emits footnotes as:
-  //   inline: <sup><a href="#footnote-N">[N]</a></sup>
-  //   list:   <ol><li id="footnote-N"> ... </li></ol>
-  // We want inline: <sup class="footnote-ref" data-ref="N">N</sup> and a footnotes array.
-  let html = result.value;
+  let html: string;
   const footnotes: { num: string; text: string; html: string }[] = [];
 
-  // Extract the footnotes section (Mammoth appends an <ol> at the end of the value)
-  const olMatch = html.match(/<ol>\s*(<li[\s\S]*?)\s*<\/ol>\s*$/);
-  if (olMatch) {
-    const liRegex = /<li id="footnote-(\d+)">([\s\S]*?)<\/li>/g;
-    let m: RegExpExecArray | null;
-    while ((m = liRegex.exec(olMatch[1])) !== null) {
-      const num = m[1];
-      const inner = m[2]
-        .replace(/<a[^>]*href="#footnote-ref-\d+"[^>]*>[\s\S]*?<\/a>/g, "") // strip back-link
-        .replace(/<p>/g, "")
-        .replace(/<\/p>/g, " ")
-        .trim();
-      const text = inner.replace(/<[^>]+>/g, "").trim();
-      footnotes.push({ num, text, html: inner });
-    }
-    html = html.replace(olMatch[0], "");
-  }
+  if (file) {
+    // ── Convert .docx to HTML via Mammoth (existing path)
+    const buf = Buffer.from(await file.arrayBuffer());
+    const result = await mammoth.convertToHtml(
+      { buffer: buf },
+      {
+        styleMap: [
+          "p[style-name='Title'] => h1",
+          "p[style-name='Heading 1'] => h2",
+          "p[style-name='Heading 2'] => h3",
+          "p[style-name='Heading 3'] => h4",
+          "p[style-name='Block Text'] => blockquote > p",
+          "p[style-name='Quote'] => blockquote > p",
+        ],
+      },
+    );
+    html = result.value;
 
-  // Rewrite inline markers
-  html = html.replace(
-    /<sup><a[^>]*id="footnote-ref-(\d+)"[^>]*>\[\d+\]<\/a><\/sup>/g,
-    (_m, num) => `<sup class="footnote-ref" data-ref="${num}">${num}</sup>`,
-  );
+    // Extract footnotes section (Mammoth appends an <ol> at the end)
+    const olMatch = html.match(/<ol>\s*(<li[\s\S]*?)\s*<\/ol>\s*$/);
+    if (olMatch) {
+      const liRegex = /<li id="footnote-(\d+)">([\s\S]*?)<\/li>/g;
+      let m: RegExpExecArray | null;
+      while ((m = liRegex.exec(olMatch[1])) !== null) {
+        const num = m[1];
+        const inner = m[2]
+          .replace(/<a[^>]*href="#footnote-ref-\d+"[^>]*>[\s\S]*?<\/a>/g, "")
+          .replace(/<p>/g, "")
+          .replace(/<\/p>/g, " ")
+          .trim();
+        const text = inner.replace(/<[^>]+>/g, "").trim();
+        footnotes.push({ num, text, html: inner });
+      }
+      html = html.replace(olMatch[0], "");
+    }
+
+    html = html.replace(
+      /<sup><a[^>]*id="footnote-ref-(\d+)"[^>]*>\[\d+\]<\/a><\/sup>/g,
+      (_m, num) => `<sup class="footnote-ref" data-ref="${num}">${num}</sup>`,
+    );
+  } else {
+    // ── Convert typed markdown to HTML. No footnote machinery — markdown
+    // drafts don't carry Word's footnote structure.
+    html = await marked.parse(markdownBody, { breaks: false, gfm: true });
+  }
 
   // ── Slug
   const slug = slugify(customSlug || title);

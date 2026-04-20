@@ -12,7 +12,9 @@ const CATEGORIES = [
 
 export default function NewArticlePage() {
   const router = useRouter();
+  const [mode, setMode] = useState<"docx" | "inline">("docx");
   const [file, setFile] = useState<File | null>(null);
+  const [markdownBody, setMarkdownBody] = useState("");
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -27,8 +29,12 @@ export default function NewArticlePage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!file) {
-      setError("Please choose a .docx file.");
+    if (mode === "docx" && !file) {
+      setError("Please choose a .docx file (or switch to Write inline).");
+      return;
+    }
+    if (mode === "inline" && !markdownBody.trim()) {
+      setError("Type an article body (or switch to Upload .docx).");
       return;
     }
     if (!title) {
@@ -37,7 +43,8 @@ export default function NewArticlePage() {
     }
     setSubmitting(true);
     const form = new FormData();
-    form.append("file", file);
+    if (mode === "docx" && file) form.append("file", file);
+    if (mode === "inline") form.append("markdownBody", markdownBody);
     if (coverImage) form.append("coverImage", coverImage);
     form.append("title", title);
     form.append("subtitle", subtitle);
@@ -96,21 +103,46 @@ export default function NewArticlePage() {
           lineHeight: 1.7,
         }}
       >
-        Upload a Word <code>.docx</code> file. Footnotes (Insert → Footnote) will be preserved as
-        proper references. Bibliography sections and citations come through as-is. A cover image is
-        optional.
+        Two ways to publish: upload a Word <code>.docx</code> (footnotes preserved, bibliography intact),
+        or type the body directly in markdown. Pick whichever is quicker for the piece. A cover image is
+        optional either way.
       </p>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-5">
-        <Field label="Word document (.docx)" required>
-          <input
-            type="file"
-            accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+        {/* Mode toggle: upload a Word doc OR type the body directly. */}
+        <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--color-divider-soft)", paddingBottom: "2px" }}>
+          <button type="button" onClick={() => setMode("docx")} style={tabStyle(mode === "docx")}>
+            Upload .docx
+          </button>
+          <button type="button" onClick={() => setMode("inline")} style={tabStyle(mode === "inline")}>
+            Write inline
+          </button>
+        </div>
+
+        {mode === "docx" ? (
+          <Field label="Word document (.docx)" required help="Footnotes (Insert → Footnote) are preserved as proper references. Bibliographies come through as-is.">
+            <input
+              type="file"
+              accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              style={fileInputStyle}
+            />
+          </Field>
+        ) : (
+          <Field
+            label="Body (markdown)"
             required
-            style={fileInputStyle}
-          />
-        </Field>
+            help="Type the article in markdown. Blank lines separate paragraphs. Use # Heading, ## Subheading, **bold**, *italic*, [link text](https://…), and > quote."
+          >
+            <textarea
+              value={markdownBody}
+              onChange={(e) => setMarkdownBody(e.target.value)}
+              rows={20}
+              placeholder={`# Opening heading\n\nYour first paragraph. Blank lines separate paragraphs.\n\n## A subheading\n\nMore body text, with **bold** or *italic* when you need it.`}
+              style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }}
+            />
+          </Field>
+        )}
 
         <Field label="Title" required>
           <input
@@ -275,3 +307,19 @@ const fileInputStyle: React.CSSProperties = {
   padding: "8px 12px",
   fontSize: "13px",
 };
+
+function tabStyle(active: boolean): React.CSSProperties {
+  return {
+    padding: "8px 16px",
+    border: "none",
+    borderBottom: active ? "2px solid var(--color-accent)" : "2px solid transparent",
+    background: "transparent",
+    color: active ? "var(--color-accent)" : "var(--color-meta)",
+    fontFamily: "var(--font-sans), sans-serif",
+    fontSize: "12px",
+    letterSpacing: "0.14em",
+    textTransform: "uppercase",
+    fontWeight: active ? 600 : 500,
+    cursor: "pointer",
+  };
+}

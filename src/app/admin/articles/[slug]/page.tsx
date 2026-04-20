@@ -43,6 +43,7 @@ export default function AdminEditArticlePage() {
   const [tags, setTags] = useState("");
   const [illustrator, setIllustrator] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [markdownBody, setMarkdownBody] = useState("");
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [displayOrder, setDisplayOrder] = useState<string>("");
 
@@ -86,6 +87,7 @@ export default function AdminEditArticlePage() {
     form.append("illustrator", illustrator);
     form.append("displayOrder", displayOrder);
     if (file) form.append("file", file);
+    if (!file && markdownBody.trim()) form.append("markdownBody", markdownBody);
     if (coverImage) form.append("coverImage", coverImage);
 
     const res = await fetch(`/api/admin/articles/${slug}`, { method: "PUT", body: form });
@@ -208,13 +210,26 @@ export default function AdminEditArticlePage() {
 
           <Field
             label="Replace body (.docx)"
-            help={`Optional. Leave blank to keep the current body (${data?.footnoteCount ?? 0} footnote${data?.footnoteCount === 1 ? "" : "s"}, ${data?.readTime || "—"}).`}
+            help={`Optional. Leave blank to keep the current body (${data?.footnoteCount ?? 0} footnote${data?.footnoteCount === 1 ? "" : "s"}, ${data?.readTime || "—"}). Or paste markdown in the next field.`}
           >
             <input
               type="file"
               accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               style={fileInputStyle}
+            />
+          </Field>
+
+          <Field
+            label="Replace body (markdown)"
+            help="Optional. Fill this in to rewrite the body as typed markdown. If both a .docx and markdown are provided, the .docx wins."
+          >
+            <textarea
+              value={markdownBody}
+              onChange={(e) => setMarkdownBody(e.target.value)}
+              rows={10}
+              placeholder={`# New opening\n\nRewrite in markdown…`}
+              style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14px", lineHeight: 1.6, resize: "vertical" }}
             />
           </Field>
 

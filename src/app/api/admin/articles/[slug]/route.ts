@@ -6,6 +6,7 @@ import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage } from "@/lib/r2";
 import mammoth from "mammoth";
+import { marked } from "marked";
 
 export const runtime = "nodejs";
 
@@ -151,6 +152,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
 
   const form = await req.formData();
   const file = form.get("file") as File | null;
+  const markdownBody = String(form.get("markdownBody") || "").trim();
   const coverImage = form.get("coverImage") as File | null;
   const title = String(form.get("title") || "").trim();
   const subtitle = String(form.get("subtitle") || "").trim();
@@ -174,7 +176,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
     .filter(Boolean)
     .map((name) => ({ slug: slugify(name), name }));
 
-  // Optional: new .docx
+  // Optional: replace body via .docx or typed markdown. When neither is provided,
+  // the existing body stays put.
   let bodyUpdate: { body: string; footnotes: string; meta: string; readTime: string } | null = null;
   if (file && file.size > 0) {
     const buf = Buffer.from(await file.arrayBuffer());
@@ -183,6 +186,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
     bodyUpdate = {
       body: html,
       footnotes: JSON.stringify(footnotes),
+      meta,
+      readTime: estimateReadTime(html),
+    };
+  } else if (markdownBody) {
+    const html = await marked.parse(markdownBody, { breaks: false, gfm: true });
+    const meta = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
+    bodyUpdate = {
+      body: html,
+      footnotes: JSON.stringify([]), // markdown mode clears footnotes
       meta,
       readTime: estimateReadTime(html),
     };

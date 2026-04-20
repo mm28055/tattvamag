@@ -42,15 +42,34 @@ function collectFootnotes(fullBody: Block[]): FnToken[] {
   return out;
 }
 
-/** Render *italic* as <em> inline. */
+/** Render *italic* as <em> and preserved <sup>...</sup> tags inline. */
 function renderInline(str: string): React.ReactNode[] {
-  const parts = str.split(/(\*[^*]+\*)/g).filter(Boolean);
-  return parts.map((p, i) => {
-    if (p.startsWith("*") && p.endsWith("*") && p.length > 2) {
-      return <em key={i}>{p.slice(1, -1)}</em>;
+  const pattern = /(\*[^*]+\*|<sup\b[^>]*>[\s\S]*?<\/sup>)/g;
+  const out: React.ReactNode[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let i = 0;
+  while ((m = pattern.exec(str)) !== null) {
+    if (m.index > last) {
+      out.push(<React.Fragment key={`t${i++}`}>{str.slice(last, m.index)}</React.Fragment>);
     }
-    return <React.Fragment key={i}>{p}</React.Fragment>;
-  });
+    const tok = m[0];
+    if (tok.startsWith("*")) {
+      out.push(<em key={`i${i++}`}>{tok.slice(1, -1)}</em>);
+    } else {
+      const inner = tok.replace(/<\/?sup[^>]*>/gi, "");
+      out.push(
+        <sup key={`s${i++}`} style={{ fontSize: "0.72em", lineHeight: 0, verticalAlign: "super" }}>
+          {inner}
+        </sup>,
+      );
+    }
+    last = pattern.lastIndex;
+  }
+  if (last < str.length) {
+    out.push(<React.Fragment key={`t${i++}`}>{str.slice(last)}</React.Fragment>);
+  }
+  return out;
 }
 
 // ══════ Footnote superscript ══════

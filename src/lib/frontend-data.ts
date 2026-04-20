@@ -118,12 +118,15 @@ function buildBlocksAndInline(
     if (tag === "p") {
       const html = $c.html() || "";
 
-      // WordPress often styles section headings as <p> with a big font-size span + <strong>
-      // rather than real <h2>. Promote those to h2 blocks.
-      const styledHeadingMatch = html.match(/^\s*<span[^>]*style="[^"]*font-size:\s*(\d+)/i);
-      const hasStrong = /<strong[^>]*>/i.test(html);
+      // WordPress often styles section headings as <p> with one of:
+      //  (a) a <span style="font-size: 14pt"><strong>Title</strong></span>
+      //  (b) plain <b><strong>Title</strong></b> or just <strong>Title</strong>
+      // Promote such <p> to h2 blocks.
       const plainText = $c.text().replace(/\s+/g, " ").trim();
-      if (styledHeadingMatch && hasStrong && plainText.length > 0 && plainText.length < 140) {
+      const hasFontSizeHeading = /<span[^>]*style="[^"]*font-size/i.test(html) && /<strong[^>]*>/i.test(html);
+      const isBoldOnly = /^\s*(?:<(?:b|strong|em|i)[^>]*>\s*)+[^<]+(?:\s*<\/(?:b|strong|em|i)>\s*)+$/i.test(html);
+      const looksLikeHeading = plainText.length > 0 && plainText.length < 80 && (hasFontSizeHeading || isBoldOnly);
+      if (looksLikeHeading) {
         pushBlock({ type: "h2", text: plainText });
         return;
       }

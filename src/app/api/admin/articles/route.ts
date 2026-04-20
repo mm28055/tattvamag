@@ -9,9 +9,8 @@ import { NextResponse } from "next/server";
 import { sql, hasDb } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
+import { saveCoverImage } from "@/lib/r2";
 import mammoth from "mammoth";
-import { promises as fs } from "node:fs";
-import path from "node:path";
 
 export const runtime = "nodejs";
 
@@ -121,16 +120,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Slug "${slug}" already exists. Use a different title or set a custom slug.` }, { status: 409 });
   }
 
-  // ── Save cover image if provided
+  // ── Save cover image if provided. Uses Cloudflare R2 when configured,
+  // otherwise writes to public/images/featured/ for local development.
   let featuredImagePath: string | null = null;
   if (coverImage && coverImage.size > 0) {
-    const ext = (coverImage.name.split(".").pop() || "jpg").toLowerCase();
-    const safeExt = /^(jpg|jpeg|png|webp)$/i.test(ext) ? ext : "jpg";
-    const filename = `${slug}.${safeExt}`;
-    const dir = path.join(process.cwd(), "public", "images", "featured");
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(path.join(dir, filename), Buffer.from(await coverImage.arrayBuffer()));
-    featuredImagePath = `/images/featured/${filename}`;
+    featuredImagePath = await saveCoverImage({
+      buffer: Buffer.from(await coverImage.arrayBuffer()),
+      slug,
+      originalName: coverImage.name,
+      contentType: coverImage.type,
+    });
   }
 
   // ── Tags

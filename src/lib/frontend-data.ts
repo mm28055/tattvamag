@@ -189,6 +189,27 @@ function buildBlocksAndInline(
   return blocks;
 }
 
+/** Concatenate the first few <p> blocks until we reach ~target chars, then trim to a word boundary. */
+function buildLongExcerpt(fullBody: Block[], target: number): string {
+  let text = "";
+  for (const block of fullBody) {
+    if (block.type !== "p") continue;
+    const clean = block.text
+      .replace(/<fn\s+id="[^"]+"\s+note="[^"]*"\s*\/>/g, "")
+      .replace(/\*([^*]+)\*/g, "$1")
+      .replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!clean) continue;
+    text += (text ? " " : "") + clean;
+    if (text.length >= target) break;
+  }
+  if (text.length <= target) return text;
+  const cut = text.slice(0, target);
+  const lastSpace = cut.lastIndexOf(" ");
+  return cut.slice(0, lastSpace > 0 ? lastSpace : target).trimEnd();
+}
+
 function formatDate(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
@@ -218,7 +239,10 @@ function toFrontendArticle(a: Awaited<ReturnType<typeof getRawArticles>>[number]
       fullBody = fullBody.slice(0, -1);
     }
   }
-  const excerpt = a.metaDescription || fullBody.find((b) => b.type === "p")?.text.replace(/<[^>]+>/g, "") || "";
+  // Build a long, consistent excerpt from the first few body paragraphs so that
+  // home-page split-layout cards always have enough copy to fill the right column.
+  // Some scraped metaDescriptions are only one sentence — too short.
+  const excerpt = buildLongExcerpt(fullBody, 540) || a.metaDescription || "";
 
   return {
     id: a.slug,

@@ -10,8 +10,8 @@ import { sql, hasDb } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage } from "@/lib/r2";
+import { markdownToArticleHtml } from "@/lib/markdown";
 import mammoth from "mammoth";
-import { marked } from "marked";
 
 export const runtime = "nodejs";
 
@@ -111,9 +111,11 @@ export async function POST(req: Request) {
       (_m, num) => `<sup class="footnote-ref" data-ref="${num}">${num}</sup>`,
     );
   } else {
-    // ── Convert typed markdown to HTML. No footnote machinery — markdown
-    // drafts don't carry Word's footnote structure.
-    html = await marked.parse(markdownBody, { breaks: false, gfm: true });
+    // ── Convert typed markdown to HTML. Handles pandoc-style footnotes
+    // ([^n] references + [^n]: definitions) the same way the .docx path does.
+    const parsed = await markdownToArticleHtml(markdownBody);
+    html = parsed.html;
+    footnotes.push(...parsed.footnotes);
   }
 
   // ── Slug

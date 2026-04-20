@@ -5,8 +5,8 @@ import { sql, hasDb } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage } from "@/lib/r2";
+import { markdownToArticleHtml } from "@/lib/markdown";
 import mammoth from "mammoth";
-import { marked } from "marked";
 
 export const runtime = "nodejs";
 
@@ -190,13 +190,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
       readTime: estimateReadTime(html),
     };
   } else if (markdownBody) {
-    const html = await marked.parse(markdownBody, { breaks: false, gfm: true });
-    const meta = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
+    const parsed = await markdownToArticleHtml(markdownBody);
     bodyUpdate = {
-      body: html,
-      footnotes: JSON.stringify([]), // markdown mode clears footnotes
-      meta,
-      readTime: estimateReadTime(html),
+      body: parsed.html,
+      footnotes: JSON.stringify(parsed.footnotes),
+      meta: parsed.metaDescription,
+      readTime: parsed.readTime,
     };
   }
 

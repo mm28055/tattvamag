@@ -2,9 +2,10 @@
 // Admin article edit — prefilled from /api/admin/articles/[slug] (GET).
 // Upload a replacement .docx or cover image, or tweak metadata in place.
 // Delete button wired to DELETE on the same endpoint.
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
+import { InsertImageButton } from "@/components/admin/InsertImageButton";
 
 const CATEGORIES = [
   { slug: "history", name: "History" },
@@ -50,6 +51,7 @@ export default function AdminEditArticlePage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     fetch(`/api/admin/articles/${slug}`)
@@ -222,15 +224,17 @@ export default function AdminEditArticlePage() {
 
           <Field
             label="Replace body (markdown)"
-            help="Optional. Fill this in to rewrite the body as typed markdown. If both a .docx and markdown are provided, the .docx wins."
+            help="Optional. Fill this in to rewrite the body. Footnotes: [^1] in the text + [^1]: your note at the bottom. If both a .docx and markdown are provided, the .docx wins."
           >
             <textarea
+              ref={bodyRef}
               value={markdownBody}
               onChange={(e) => setMarkdownBody(e.target.value)}
               rows={10}
-              placeholder={`# New opening\n\nRewrite in markdown…`}
+              placeholder={`# New opening\n\nRewrite in markdown with a footnote[^1].\n\n[^1]: The footnote text.`}
               style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14px", lineHeight: 1.6, resize: "vertical" }}
             />
+            <InsertImageButton getTextarea={() => bodyRef.current} onChange={setMarkdownBody} />
           </Field>
 
           <Field

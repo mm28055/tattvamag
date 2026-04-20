@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { InsertImageButton } from "@/components/admin/InsertImageButton";
 
 const CATEGORIES = [
   { slug: "history", name: "History" },
@@ -25,6 +26,7 @@ export default function NewArticlePage() {
   const [slug, setSlug] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -132,15 +134,17 @@ export default function NewArticlePage() {
           <Field
             label="Body (markdown)"
             required
-            help="Type the article in markdown. Blank lines separate paragraphs. Use # Heading, ## Subheading, **bold**, *italic*, [link text](https://…), and > quote."
+            help={`Paragraphs: separate with a blank line. Formatting: # Heading, ## Subheading, **bold**, *italic*, [link](https://…), > quote. Footnotes: [^1] in the text and [^1]: your note at the bottom.`}
           >
             <textarea
+              ref={bodyRef}
               value={markdownBody}
               onChange={(e) => setMarkdownBody(e.target.value)}
               rows={20}
-              placeholder={`# Opening heading\n\nYour first paragraph. Blank lines separate paragraphs.\n\n## A subheading\n\nMore body text, with **bold** or *italic* when you need it.`}
+              placeholder={`# Opening heading\n\nYour first paragraph with a footnote[^1].\n\n## A subheading\n\nMore body text, with **bold** or *italic* when you need it.\n\n[^1]: This is the footnote. It can contain *emphasis* or [links](https://example.org).`}
               style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }}
             />
+            <InsertImageButton getTextarea={() => bodyRef.current} onChange={setMarkdownBody} />
           </Field>
         )}
 

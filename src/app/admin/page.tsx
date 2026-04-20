@@ -82,6 +82,7 @@ export default async function AdminDashboard() {
           <ActionCard href="/admin/articles" title="Manage articles" description="Edit titles, tags, cover images, or replace the .docx. Delete articles." />
           <ActionCard href="/admin/notebook/new" title="Write a notebook entry" description="Short journal-style post. No .docx, no cover image — just type." />
           <ActionCard href="/admin/notebook" title="Manage notebook" description="Edit or delete existing notebook entries." />
+          <ActionCard href="/admin/media" title="Media library" description="Upload standalone images and copy their public URLs to paste into articles." />
           <ActionCard href="/admin/comments" title="Moderate comments" description="Approve or delete pending reader letters." />
           <ActionCard href="/admin/about" title="Edit the About page" description="Update the bio and affiliations shown to readers." />
         </div>

@@ -79,7 +79,7 @@ export default function SiteFooter() {
             Letters and responses: <span style={{ color: "#E8E0D4" }}>correspondence@tattvamag.in</span>
           </p>
           <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "13px", lineHeight: 1.65, color: "#8B8079", marginTop: "14px" }}>
-            <em>Tattva Heritage Foundation</em>
+            <em>Tattva Heritage Foundation</em>, Kolkata
             <br />
             <em>Centre for Shaiva Studies</em>, Pondicherry
             <br />
@@ -106,7 +106,7 @@ export default function SiteFooter() {
         }}
       >
         <span>© Manish Maheshwari</span>
-        <span>Mysore · Pondicherry</span>
+        <span>Kolkata · Mysore · Pondicherry</span>
       </div>
     </footer>
   );

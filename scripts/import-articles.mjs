@@ -17,7 +17,8 @@ if (!process.env.DATABASE_URL) {
 const sql = neon(process.env.DATABASE_URL);
 
 const DATA_DIR = path.join(process.cwd(), "src", "data");
-const files = (await fs.readdir(DATA_DIR)).filter((f) => f.endsWith(".json"));
+// Skip helper files starting with `_` (e.g. _notebook-seed.json).
+const files = (await fs.readdir(DATA_DIR)).filter((f) => f.endsWith(".json") && !f.startsWith("_"));
 
 let inserted = 0;
 let skipped = 0;

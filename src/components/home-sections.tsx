@@ -198,7 +198,7 @@ function SecondaryCard({
           {essay.title}
         </h3>
         {essay.subtitle && (
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "15px", color: "#6a5e54", marginTop: "8px", fontStyle: "italic", lineHeight: 1.45 }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "17px", color: "#554a40", marginTop: "8px", fontStyle: "italic", lineHeight: 1.45 }}>
             {essay.subtitle}
           </p>
         )}
@@ -274,7 +274,7 @@ function ColumnACard({ article, accent, tagMuted, isFirst }: { article: Frontend
           {article.title}
         </h3>
         {article.subtitle && (
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "15px", fontStyle: "italic", color: "#6a5e54", marginTop: "8px", lineHeight: 1.45 }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "17px", fontStyle: "italic", color: "#554a40", marginTop: "8px", lineHeight: 1.45 }}>
             {article.subtitle}
           </p>
         )}
@@ -336,7 +336,7 @@ function ColumnBCard({
           {article.title}
         </h3>
         {article.subtitle && (
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "16px", fontStyle: "italic", color: "#6a5e54", marginTop: "10px", lineHeight: 1.45 }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "17px", fontStyle: "italic", color: "#554a40", marginTop: "10px", lineHeight: 1.45 }}>
             {article.subtitle}
           </p>
         )}

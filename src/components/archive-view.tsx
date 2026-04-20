@@ -359,7 +359,7 @@ function ArchiveCard({
       </Link>
 
       {item.subtitle && (
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "16px", color: "#6a5e54", marginTop: "6px", lineHeight: 1.4 }}>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "17px", color: "#554a40", marginTop: "6px", lineHeight: 1.45 }}>
           {item.subtitle}
         </div>
       )}

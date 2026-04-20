@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { sql, hasDb } from "@/lib/db";
 import { getAllArticles } from "@/lib/content";
+import { getAllNotebookEntriesAsync } from "@/lib/notebook-data";
 import LogoutButton from "@/components/admin/LogoutButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   const articles = await getAllArticles();
+  const notebookEntries = await getAllNotebookEntriesAsync();
   let pendingComments = 0;
   let approvedComments = 0;
   if (hasDb) {
@@ -56,8 +58,9 @@ export default async function AdminDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Stat label="Articles" value={articles.length} href="/admin/articles" />
+        <Stat label="Notebook entries" value={notebookEntries.length} href="/admin/notebook" />
         <Stat label="Pending comments" value={pendingComments} href="/admin/comments" accent={pendingComments > 0} />
         <Stat label="Approved comments" value={approvedComments} href="/admin/comments?filter=approved" />
       </div>
@@ -77,6 +80,8 @@ export default async function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ActionCard href="/admin/new" title="Publish a new article" description="Upload a .docx, add a cover image, and publish." />
           <ActionCard href="/admin/articles" title="Manage articles" description="Edit titles, tags, cover images, or replace the .docx. Delete articles." />
+          <ActionCard href="/admin/notebook/new" title="Write a notebook entry" description="Short journal-style post. No .docx, no cover image — just type." />
+          <ActionCard href="/admin/notebook" title="Manage notebook" description="Edit or delete existing notebook entries." />
           <ActionCard href="/admin/comments" title="Moderate comments" description="Approve or delete pending reader letters." />
           <ActionCard href="/admin/about" title="Edit the About page" description="Update the bio and affiliations shown to readers." />
         </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getFrontendArticles } from "@/lib/frontend-data";
-import { getAllNotebookEntries } from "@/lib/notebook-data";
+import { getAllNotebookEntriesAsync } from "@/lib/notebook-data";
 import { SITE } from "@/lib/site-config";
 import ArchiveView from "@/components/archive-view";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function ArchivePage() {
   const articles = await getFrontendArticles();
-  const notebook = getAllNotebookEntries();
+  const notebook = await getAllNotebookEntriesAsync();
 
   return (
     <Suspense fallback={null}>

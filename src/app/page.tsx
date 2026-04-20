@@ -1,6 +1,6 @@
 // Homepage: featured + secondary grid + more reading + epigraph + notebook preview.
 import { getFrontendArticles } from "@/lib/frontend-data";
-import { getAllNotebookEntries } from "@/lib/notebook-data";
+import { getAllNotebookEntriesAsync } from "@/lib/notebook-data";
 import { SITE, EPIGRAPH } from "@/lib/site-config";
 import {
   FeaturedEssay,
@@ -15,7 +15,7 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const all = await getFrontendArticles();
-  const notebook = getAllNotebookEntries();
+  const notebook = await getAllNotebookEntriesAsync();
 
   const [featured, s1, s2, s3, a1, a2, b] = all;
   if (!featured) {

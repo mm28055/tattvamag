@@ -61,7 +61,7 @@ export default async function AdminArticlesPage() {
           lineHeight: 1.6,
         }}
       >
-        {articles.length} {articles.length === 1 ? "article" : "articles"} in the database. Click a title to edit — upload a new .docx to replace the body, or tweak metadata in place.
+        {articles.length} {articles.length === 1 ? "article" : "articles"} in the database. Click a row to edit. The <strong>Slot</strong> column shows which homepage position the article is pinned to (1 = featured, 2–4 = grid, 5–7 = more reading). Unpinned rows fall back to newest-first.
       </p>
 
       <div
@@ -74,7 +74,7 @@ export default async function AdminArticlesPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) 160px 100px 60px",
+            gridTemplateColumns: "70px minmax(0, 1fr) 160px 100px 60px",
             padding: "12px 18px",
             borderBottom: "1px solid #e8e2d6",
             fontFamily: "'DM Sans', sans-serif",
@@ -86,6 +86,7 @@ export default async function AdminArticlesPage() {
             gap: "12px",
           }}
         >
+          <span>Slot</span>
           <span>Title</span>
           <span>Category</span>
           <span>Date</span>
@@ -98,7 +99,7 @@ export default async function AdminArticlesPage() {
             href={`/admin/articles/${a.slug}`}
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) 160px 100px 60px",
+              gridTemplateColumns: "70px minmax(0, 1fr) 160px 100px 60px",
               padding: "14px 18px",
               borderBottom: "1px solid #f0eadd",
               textDecoration: "none",
@@ -108,6 +109,17 @@ export default async function AdminArticlesPage() {
             }}
             className="hover:bg-[#faf5e8]"
           >
+            <span
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "13px",
+                color: a.displayOrder ? "#B83A14" : "#c4b9a8",
+                fontWeight: a.displayOrder ? 600 : 400,
+                letterSpacing: "0.04em",
+              }}
+            >
+              {a.displayOrder ? `#${a.displayOrder}` : "—"}
+            </span>
             <span
               style={{
                 fontFamily: "'Source Serif 4', serif",

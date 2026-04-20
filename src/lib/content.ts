@@ -26,6 +26,8 @@ export type Article = {
   body: string;
   footnotes: Footnote[];
   sourceUrl?: string;
+  /** Manual homepage slot 1-N. When null, falls back to date-DESC ordering. */
+  displayOrder?: number | null;
 };
 
 const DATA_DIR = path.join(process.cwd(), "src", "data");
@@ -64,6 +66,7 @@ type DbRow = {
   footnotes: Footnote[];
   tags: Tag[];
   source_url: string | null;
+  display_order: number | null;
 };
 
 function rowToArticle(r: DbRow): Article {
@@ -84,11 +87,16 @@ function rowToArticle(r: DbRow): Article {
     body: r.body,
     footnotes: r.footnotes || [],
     sourceUrl: r.source_url || undefined,
+    displayOrder: r.display_order,
   };
 }
 
 async function readFromDb(): Promise<Article[]> {
-  const rows = (await sql`SELECT * FROM articles ORDER BY date DESC, published_at DESC`) as DbRow[];
+  // Admin-set display_order wins when present; otherwise fall back to newest-first.
+  const rows = (await sql`
+    SELECT * FROM articles
+    ORDER BY display_order ASC NULLS LAST, date DESC, published_at DESC
+  `) as DbRow[];
   return rows.map(rowToArticle);
 }
 

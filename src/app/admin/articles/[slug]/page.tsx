@@ -24,6 +24,7 @@ type ArticleData = {
   featuredImage: string | null;
   readTime: string;
   footnoteCount: number;
+  displayOrder: number | null;
 };
 
 export default function AdminEditArticlePage() {
@@ -43,6 +44,7 @@ export default function AdminEditArticlePage() {
   const [illustrator, setIllustrator] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [displayOrder, setDisplayOrder] = useState<string>("");
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -65,6 +67,7 @@ export default function AdminEditArticlePage() {
         setType(a.type === "note" ? "note" : "essay");
         setTags(a.tags || "");
         setIllustrator(a.illustrator || "");
+        setDisplayOrder(a.displayOrder == null ? "" : String(a.displayOrder));
       })
       .catch(() => setMessage({ kind: "error", text: "Failed to load article." }))
       .finally(() => setLoading(false));
@@ -81,6 +84,7 @@ export default function AdminEditArticlePage() {
     form.append("type", type);
     form.append("tags", tags);
     form.append("illustrator", illustrator);
+    form.append("displayOrder", displayOrder);
     if (file) form.append("file", file);
     if (coverImage) form.append("coverImage", coverImage);
 
@@ -185,6 +189,21 @@ export default function AdminEditArticlePage() {
 
           <Field label="Illustrator">
             <input type="text" value={illustrator} onChange={(e) => setIllustrator(e.target.value)} style={inputStyle} />
+          </Field>
+
+          <Field
+            label="Homepage position"
+            help="1–7 to pin this piece to the homepage in that slot (1 = big featured, 2-4 = grid, 5-7 = more reading). Leave blank to fall back to newest-first ordering."
+          >
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={displayOrder}
+              onChange={(e) => setDisplayOrder(e.target.value)}
+              placeholder="auto"
+              style={{ ...inputStyle, width: "120px" }}
+            />
           </Field>
 
           <Field

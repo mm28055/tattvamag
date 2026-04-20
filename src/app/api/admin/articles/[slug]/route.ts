@@ -107,6 +107,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     body: string;
     footnotes: Array<{ num: string; text: string; html: string }>;
     tags: Array<{ slug: string; name: string }>;
+    display_order: number | null;
   }>;
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -129,6 +130,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       featuredImage: r.featured_image,
       tags: (r.tags || []).map((t) => t.name).join(", "),
       footnoteCount: (r.footnotes || []).length,
+      displayOrder: r.display_order,
     },
   });
 }
@@ -156,6 +158,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
   const tagsRaw = String(form.get("tags") || "").trim();
   const type = String(form.get("type") || "essay").trim() === "note" ? "note" : "essay";
   const illustrator = String(form.get("illustrator") || "").trim();
+  const displayOrderRaw = String(form.get("displayOrder") || "").trim();
+  // "" or missing → unset (NULL). Otherwise coerce to integer, clamp to sane range.
+  const displayOrder: number | null =
+    displayOrderRaw === "" ? null : Math.max(1, Math.min(99, parseInt(displayOrderRaw, 10) || 0)) || null;
 
   if (!title) return NextResponse.json({ error: "title is required" }, { status: 400 });
   if (!categorySlug || !CATEGORIES[categorySlug]) {
@@ -216,6 +222,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
       meta_description  = COALESCE(${newMeta}, meta_description),
       read_time         = COALESCE(${newReadTime}, read_time),
       featured_image    = CASE WHEN ${changeFeatured} THEN ${newFeatured} ELSE featured_image END,
+      display_order     = ${displayOrder},
       updated_at        = NOW()
     WHERE slug = ${slug}
   `;

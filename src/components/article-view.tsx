@@ -165,12 +165,6 @@ function ClassicalHeader({ article, accent, tagMuted }: { article: FrontendArtic
         <span style={{ fontWeight: 600, color: "#3a3530" }}>{article.author}</span>
         <span style={{ margin: "0 10px", color: "#b0a89e" }}>·</span>
         <span>{article.readTime}</span>
-        {article.datePublished && (
-          <>
-            <span style={{ margin: "0 10px", color: "#b0a89e" }}>·</span>
-            <span>{article.datePublished}</span>
-          </>
-        )}
       </div>
     </header>
   );

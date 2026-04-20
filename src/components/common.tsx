@@ -16,14 +16,20 @@ export function Ornament({ accent, width = 22, margin = "20px 0" }: { accent: st
   return <div aria-hidden style={{ width: `${width}px`, height: "2px", background: accent, margin }} />;
 }
 
+// Cards show at most 3 tags — more than that unbalances the grid layout
+// (see the editorial design — each card has 2–3 tags).
+const MAX_CARD_TAGS = 3;
+
 export function Tags({
   tags,
   muted,
   onTagClick,
+  max = MAX_CARD_TAGS,
 }: {
   tags: string[];
   muted: string;
   onTagClick?: (tag: string) => void;
+  max?: number;
 }) {
   const base: React.CSSProperties = {
     fontFamily: "'DM Sans', sans-serif",
@@ -33,9 +39,10 @@ export function Tags({
     color: muted,
     fontWeight: 600,
   };
+  const shown = tags.slice(0, max);
   return (
     <span style={base}>
-      {tags.map((t, i) => (
+      {shown.map((t, i) => (
         <React.Fragment key={t}>
           {i > 0 && <span style={{ color: "#d4cdc2", margin: "0 8px" }}>·</span>}
           {onTagClick ? (
@@ -61,10 +68,12 @@ export function TagAsLink({
   tags,
   muted,
   tab = "essays",
+  max = MAX_CARD_TAGS,
 }: {
   tags: string[];
   muted: string;
   tab?: "essays" | "notebook";
+  max?: number;
 }) {
   const base: React.CSSProperties = {
     fontFamily: "'DM Sans', sans-serif",
@@ -74,9 +83,10 @@ export function TagAsLink({
     color: muted,
     fontWeight: 600,
   };
+  const shown = tags.slice(0, max);
   return (
     <span style={base}>
-      {tags.map((t, i) => (
+      {shown.map((t, i) => (
         <React.Fragment key={t}>
           {i > 0 && <span style={{ color: "#d4cdc2", margin: "0 8px" }}>·</span>}
           <Link

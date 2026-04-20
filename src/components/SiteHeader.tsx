@@ -168,7 +168,7 @@ export default function SiteHeader() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            height: "54px",
+            height: "48px",
           }}
         >
           {/* Compact logo — तत्त्व · Tattva */}

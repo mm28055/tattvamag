@@ -195,6 +195,7 @@ function buildBlocksAndInline(
 /** Concatenate the first few <p> blocks until we reach ~target chars, then trim to a word boundary. */
 function buildLongExcerpt(fullBody: Block[], target: number): string {
   let text = "";
+  let truncated = false;
   for (const block of fullBody) {
     if (block.type !== "p") continue;
     const clean = block.text
@@ -205,12 +206,15 @@ function buildLongExcerpt(fullBody: Block[], target: number): string {
       .trim();
     if (!clean) continue;
     text += (text ? " " : "") + clean;
-    if (text.length >= target) break;
+    if (text.length >= target) {
+      truncated = true;
+      break;
+    }
   }
-  if (text.length <= target) return text;
+  if (!truncated) return text;
   const cut = text.slice(0, target);
   const lastSpace = cut.lastIndexOf(" ");
-  return cut.slice(0, lastSpace > 0 ? lastSpace : target).trimEnd();
+  return cut.slice(0, lastSpace > 0 ? lastSpace : target).trimEnd() + "…";
 }
 
 function formatDate(iso: string): string {

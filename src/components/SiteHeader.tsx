@@ -42,9 +42,9 @@ export default function SiteHeader() {
       </div>
 
       {/* Masthead */}
-      <header style={{ maxWidth: "1200px", margin: "0 auto", padding: "64px 40px 0" }}>
+      <header style={{ maxWidth: "1200px", margin: "0 auto", padding: "36px 40px 0" }}>
         <Link href="/" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-          <div style={{ textAlign: "center", paddingBottom: "36px" }}>
+          <div style={{ textAlign: "center", paddingBottom: "22px" }}>
             <div
               style={{
                 fontFamily: "'Noto Serif Devanagari', 'Cormorant Garamond', serif",
@@ -52,7 +52,7 @@ export default function SiteHeader() {
                 color: accent,
                 letterSpacing: "0.06em",
                 fontWeight: 500,
-                marginBottom: "10px",
+                marginBottom: "6px",
               }}
             >
               तत्त्व
@@ -60,7 +60,7 @@ export default function SiteHeader() {
             <h1
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "76px",
+                fontSize: "68px",
                 fontWeight: 500,
                 color: "#1a1714",
                 margin: 0,

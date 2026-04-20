@@ -20,7 +20,7 @@ export default async function HomePage() {
   const [featured, s1, s2, s3, a1, a2, b] = all;
   if (!featured) {
     return (
-      <main style={{ maxWidth: "1080px", margin: "0 auto", padding: "80px 40px", textAlign: "center" }}>
+      <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "80px 40px", textAlign: "center" }}>
         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "18px", color: "#6b6259" }}>
           No essays yet.
         </p>
@@ -29,7 +29,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main style={{ maxWidth: "1080px", margin: "0 auto", padding: "0 40px" }}>
+    <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 40px" }}>
       <FeaturedEssay essay={featured} accent={SITE.accent} tagMuted={SITE.tagMuted} layout={SITE.featuredLayout} />
       {s1 && s2 && s3 && (
         <SecondaryGrid essays={[s1, s2, s3]} accent={SITE.accent} tagMuted={SITE.tagMuted} />

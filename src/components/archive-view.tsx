@@ -114,7 +114,7 @@ export default function ArchiveView({
   });
 
   return (
-    <main style={{ maxWidth: "880px", margin: "0 auto", padding: "56px 40px 100px" }}>
+    <main style={{ maxWidth: "960px", margin: "0 auto", padding: "56px 40px 100px" }}>
       {/* Page header */}
       <div style={{ textAlign: "center", marginBottom: "44px" }}>
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", letterSpacing: "0.22em", textTransform: "uppercase", color: tagMuted, fontWeight: 600, marginBottom: "14px" }}>

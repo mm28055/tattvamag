@@ -7,8 +7,9 @@ export const SITE = {
   background: "#F4E8D4",
   featuredLayout: "split" as "split" | "centered",
   headerVariant: "classical" as "classical" | "editorial",
-  measure: 720,
+  measure: 780, // article reading column — matches tattvamag.org
   bodyFontSize: 18,
+  maxPage: 1200, // main container — matches tattvamag.org (uses 1206)
 };
 
 export const EPIGRAPH = {

@@ -10,7 +10,7 @@ export default function SiteFooter() {
       <div
         className="tm-footer-grid"
         style={{
-          maxWidth: "1080px",
+          maxWidth: "1200px",
           margin: "0 auto",
           display: "grid",
           gridTemplateColumns: "1.2fr 1fr 1fr",
@@ -90,7 +90,7 @@ export default function SiteFooter() {
 
       <div
         style={{
-          maxWidth: "1080px",
+          maxWidth: "1200px",
           margin: "28px auto 0",
           paddingTop: "18px",
           borderTop: "1px solid #3d3530",

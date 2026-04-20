@@ -148,7 +148,7 @@ function ProgressBar({ accent }: { accent: string }) {
 // ══════ Classical header ══════
 function ClassicalHeader({ article, accent, tagMuted }: { article: FrontendArticle; accent: string; tagMuted: string }) {
   return (
-    <header style={{ maxWidth: "760px", margin: "0 auto", padding: "60px 40px 40px", textAlign: "center" }}>
+    <header style={{ maxWidth: "820px", margin: "0 auto", padding: "60px 40px 40px", textAlign: "center" }}>
       <div style={{ marginBottom: "24px" }}>
         <TagAsLink tags={article.tags} muted={tagMuted} />
       </div>
@@ -179,7 +179,7 @@ function ClassicalHeader({ article, accent, tagMuted }: { article: FrontendArtic
 // ══════ Frontispiece image (real src, else placeholder) ══════
 function FrontispieceImage({ src, label, caption, accent }: { src?: string; label?: string; caption?: string; accent: string }) {
   return (
-    <figure style={{ margin: "0 auto", padding: "8px 40px 0", maxWidth: "960px", textAlign: "center" }}>
+    <figure style={{ margin: "0 auto", padding: "8px 40px 0", maxWidth: "1020px", textAlign: "center" }}>
       <div style={{ width: "60%", margin: "0 auto", maxWidth: "100%" }}>
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -639,7 +639,7 @@ export default function ArticleView({
         return (
           <React.Fragment key={`${id}-${idx}`}>
             {idx > 0 && (
-              <div style={{ maxWidth: "960px", margin: "120px auto 0", padding: "0 40px" }}>
+              <div style={{ maxWidth: "1020px", margin: "120px auto 0", padding: "0 40px" }}>
                 <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", letterSpacing: "0.24em", textTransform: "uppercase", color: accent, fontWeight: 600, marginBottom: "10px" }}>
                   Next article
                 </div>

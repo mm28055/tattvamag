@@ -42,7 +42,7 @@ export default function SiteHeader() {
       </div>
 
       {/* Masthead */}
-      <header style={{ maxWidth: "1080px", margin: "0 auto", padding: "64px 40px 0" }}>
+      <header style={{ maxWidth: "1200px", margin: "0 auto", padding: "64px 40px 0" }}>
         <Link href="/" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
           <div style={{ textAlign: "center", paddingBottom: "36px" }}>
             <div

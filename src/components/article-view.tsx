@@ -317,44 +317,58 @@ function BodyParagraph({
         )}
         {nodes}
       </p>
-      {cited.map((fn) => {
-        const isFocus = (hoverFnId || activeFnId) === fn.id;
-        return (
-          <aside
-            key={fn.id}
-            className="tm-margin-note"
-            data-active={isFocus ? "1" : "0"}
-            style={{
-              position: "absolute",
-              left: "calc(100% + 48px)",
-              top: 0,
-              width: "240px",
-              fontFamily: "'Source Serif 4', Georgia, serif",
-              fontSize: "13.5px",
-              lineHeight: 1.55,
-              color: isFocus ? "#1a1714" : "#8b7f72",
-              paddingLeft: "16px",
-              borderLeft: `2px solid ${isFocus ? accent : "#d4cdc2"}`,
-              transition: "color 0.2s ease, border-color 0.2s ease",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "10.5px",
-                fontWeight: 700,
-                color: accent,
-                letterSpacing: "0.08em",
-                display: "block",
-                marginBottom: "4px",
-              }}
-            >
-              [{fn.id}]
-            </span>
-            {renderInline(fn.note)}
-          </aside>
-        );
-      })}
+      {cited.length > 0 && (
+        <div
+          className="tm-margin-note-col"
+          style={{
+            position: "absolute",
+            left: "calc(100% + 48px)",
+            top: 0,
+            width: "240px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "18px",
+          }}
+        >
+          {/* dedupe — if the same footnote is cited twice in one paragraph, show it once */}
+          {cited
+            .filter((fn, i, arr) => arr.findIndex((x) => x.id === fn.id) === i)
+            .map((fn) => {
+              const isFocus = (hoverFnId || activeFnId) === fn.id;
+              return (
+                <aside
+                  key={fn.id}
+                  className="tm-margin-note"
+                  data-active={isFocus ? "1" : "0"}
+                  style={{
+                    fontFamily: "'Source Serif 4', Georgia, serif",
+                    fontSize: "13.5px",
+                    lineHeight: 1.55,
+                    color: isFocus ? "#1a1714" : "#8b7f72",
+                    paddingLeft: "16px",
+                    borderLeft: `2px solid ${isFocus ? accent : "#d4cdc2"}`,
+                    transition: "color 0.2s ease, border-color 0.2s ease",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      color: accent,
+                      letterSpacing: "0.08em",
+                      display: "block",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    [{fn.id}]
+                  </span>
+                  {renderInline(fn.note)}
+                </aside>
+              );
+            })}
+        </div>
+      )}
     </div>
   );
 }

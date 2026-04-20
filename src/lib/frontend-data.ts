@@ -11,6 +11,41 @@ function escapeFn(s: string): string {
   return s.replace(/"/g, '\\"').replace(/\s+/g, " ").trim();
 }
 
+/** Decode HTML entities that cheerio's .html() re-encodes.
+ *  Keeps our own <fn id=".." note="..." /> tokens intact. */
+const NAMED_ENTITIES: Record<string, string> = {
+  "&nbsp;": " ",
+  "&amp;": "&",
+  "&quot;": '"',
+  "&apos;": "'",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&hellip;": "…",
+  "&mdash;": "—",
+  "&ndash;": "–",
+  "&ldquo;": "\u201c",
+  "&rdquo;": "\u201d",
+  "&lsquo;": "\u2018",
+  "&rsquo;": "\u2019",
+  "&laquo;": "«",
+  "&raquo;": "»",
+  "&copy;": "©",
+  "&reg;": "®",
+  "&trade;": "™",
+  "&ensp;": " ",
+  "&emsp;": " ",
+  "&thinsp;": " ",
+  "&middot;": "·",
+};
+
+function decodeEntities(s: string): string {
+  if (!s) return s;
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCharCode(parseInt(n, 16)))
+    .replace(/&[a-zA-Z]+;/g, (m) => NAMED_ENTITIES[m] ?? m);
+}
+
 /** Convert inline HTML to the plain-ish text the prototype's renderer expects:
  *  keeps <fn id="N" note="..." /> tokens, converts <em>/<i> to *...*, strips everything else. */
 function htmlToInline(html: string): string {
@@ -68,6 +103,14 @@ function buildBlocksAndInline(
   const blocks: Block[] = [];
   const root = $("#__root").first();
 
+  const pushBlock = (b: Block) => {
+    // Decode entities in any text-bearing block.
+    if ("text" in b && b.text) b.text = decodeEntities(b.text);
+    if (b.type === "image" && b.caption) b.caption = decodeEntities(b.caption);
+    if (b.type === "image" && b.label) b.label = decodeEntities(b.label);
+    blocks.push(b);
+  };
+
   root.children().each((_, child) => {
     const $c = $(child);
     const tag = (("tagName" in (child as object) ? (child as { tagName?: string }).tagName : undefined) || (child as { name?: string }).name || "").toLowerCase();
@@ -81,7 +124,7 @@ function buildBlocksAndInline(
       const hasStrong = /<strong[^>]*>/i.test(html);
       const plainText = $c.text().replace(/\s+/g, " ").trim();
       if (styledHeadingMatch && hasStrong && plainText.length > 0 && plainText.length < 140) {
-        blocks.push({ type: "h2", text: plainText });
+        pushBlock({ type: "h2", text: plainText });
         return;
       }
 
@@ -89,20 +132,20 @@ function buildBlocksAndInline(
       const finalText = inline
         .replace(/\|\|\|FN:([^:]+):([\s\S]*?)\|\|\|/g, (_m, num, note) => `<fn id="${num}" note="${note}" />`)
         .trim();
-      if (finalText) blocks.push({ type: "p", text: finalText });
+      if (finalText) pushBlock({ type: "p", text: finalText });
       return;
     }
 
     if (tag === "h1" || tag === "h2" || tag === "h3" || tag === "h4") {
       const text = $c.text().trim();
-      if (text) blocks.push({ type: "h2", text });
+      if (text) pushBlock({ type: "h2", text });
       return;
     }
 
     if (tag === "blockquote") {
       // Use the first paragraph's text as the pullquote content.
       const text = $c.text().replace(/\s+/g, " ").trim();
-      if (text) blocks.push({ type: "pullquote", text });
+      if (text) pushBlock({ type: "pullquote", text });
       return;
     }
 
@@ -112,7 +155,7 @@ function buildBlocksAndInline(
       const src = $img.attr("src") || "";
       const alt = $img.attr("alt") || "";
       const caption = $cap.text().trim();
-      blocks.push({
+      pushBlock({
         type: "image",
         src: src || undefined,
         label: alt || caption.slice(0, 60) || "Image",
@@ -124,7 +167,7 @@ function buildBlocksAndInline(
     if (tag === "img") {
       const src = $c.attr("src") || "";
       const alt = $c.attr("alt") || "";
-      blocks.push({ type: "image", src, label: alt || "Image" });
+      pushBlock({ type: "image", src, label: alt || "Image" });
       return;
     }
 
@@ -133,14 +176,14 @@ function buildBlocksAndInline(
       // Render as paragraphs of list items
       $c.find("> li").each((_, li) => {
         const t = $(li).text().replace(/\s+/g, " ").trim();
-        if (t) blocks.push({ type: "p", text: `• ${t}` });
+        if (t) pushBlock({ type: "p", text: `• ${t}` });
       });
       return;
     }
 
     // Fall-through: if it has readable text, wrap as a paragraph
     const text = $c.text().replace(/\s+/g, " ").trim();
-    if (text.length > 20) blocks.push({ type: "p", text });
+    if (text.length > 20) pushBlock({ type: "p", text });
   });
 
   return blocks;

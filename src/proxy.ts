@@ -1,11 +1,11 @@
 // Protect /admin/* routes. Anyone without a valid session cookie is redirected to /admin/login.
-// Lightweight verification inside middleware using `jose` (edge-compatible).
+// In Next.js 16, middleware is called "proxy" — same API.
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
 const COOKIE_NAME = "tattva_admin";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only guard /admin (and sub-paths) except /admin/login itself

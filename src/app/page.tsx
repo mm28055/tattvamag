@@ -1,40 +1,46 @@
-// Homepage — toggles between Layout A (Variant 1 text-focused) and Layout B (v2) by day-of-year.
-// You can force either layout for preview with ?layout=a or ?layout=b.
+// Homepage: featured + secondary grid + more reading + epigraph + notebook preview.
+import { getFrontendArticles } from "@/lib/frontend-data";
+import { getAllNotebookEntries } from "@/lib/notebook-data";
+import { SITE, EPIGRAPH } from "@/lib/site-config";
+import {
+  FeaturedEssay,
+  SecondaryGrid,
+  MoreReadingSection,
+  QuoteSeparator,
+  NotebookSection,
+} from "@/components/home-sections";
+import { ShowMoreLink } from "@/components/common";
 
-import { getAllArticles } from "@/lib/content";
-import HomeLayoutA from "@/components/HomeLayoutA";
-import HomeLayoutB from "@/components/HomeLayoutB";
+export const revalidate = 300;
 
-export const revalidate = 3600;
+export default async function HomePage() {
+  const all = await getFrontendArticles();
+  const notebook = getAllNotebookEntries();
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ layout?: string }>;
-}) {
-  const { layout } = await searchParams;
-
-  const all = await getAllArticles();
-  const essays = all.filter((a) => a.type !== "note");
-  const notes = all.filter((a) => a.type === "note");
-
-  const featured = essays[0];
-  const secondary = essays.slice(1);
-
-  // Explicit override takes precedence; otherwise flip daily.
-  let useLayoutA: boolean;
-  if (layout === "a") useLayoutA = true;
-  else if (layout === "b") useLayoutA = false;
-  else {
-    const dayOfYear = Math.floor(
-      (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000,
+  const [featured, s1, s2, s3, a1, a2, b] = all;
+  if (!featured) {
+    return (
+      <main style={{ maxWidth: "1080px", margin: "0 auto", padding: "80px 40px", textAlign: "center" }}>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "18px", color: "#6b6259" }}>
+          No essays yet.
+        </p>
+      </main>
     );
-    useLayoutA = dayOfYear % 2 === 0;
   }
 
-  return useLayoutA ? (
-    <HomeLayoutA featured={featured} secondary={secondary} />
-  ) : (
-    <HomeLayoutB featured={featured} secondary={secondary} notebook={notes.slice(0, 4)} />
+  return (
+    <main style={{ maxWidth: "1080px", margin: "0 auto", padding: "0 40px" }}>
+      <FeaturedEssay essay={featured} accent={SITE.accent} tagMuted={SITE.tagMuted} layout={SITE.featuredLayout} />
+      {s1 && s2 && s3 && (
+        <SecondaryGrid essays={[s1, s2, s3]} accent={SITE.accent} tagMuted={SITE.tagMuted} />
+      )}
+      {a1 && a2 && b && (
+        <MoreReadingSection articles={[a1, a2, b]} accent={SITE.accent} tagMuted={SITE.tagMuted} />
+      )}
+      <ShowMoreLink label="Browse all essays" accent={SITE.accent} href="/archive?tab=essays" />
+      <QuoteSeparator quote={EPIGRAPH} accent={SITE.accent} />
+      <NotebookSection entries={notebook} accent={SITE.accent} tagMuted={SITE.tagMuted} />
+      <ShowMoreLink label="All notebook entries" accent={SITE.accent} href="/notebook" />
+    </main>
   );
 }

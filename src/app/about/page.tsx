@@ -1,97 +1,81 @@
 import type { Metadata } from "next";
+import { getAbout } from "@/lib/about";
+import { SITE } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "About",
-  description:
-    "Tattva is the intellectual notebook of Manish Maheshwari, covering Indian textual traditions, philosophy, history, and colonial discourse.",
+  description: "About Tattva — the intellectual notebook of Manish Maheshwari.",
 };
 
-export default function AboutPage() {
-  return (
-    <div className="max-w-[640px] mx-auto px-6 pt-16 pb-24">
-      <h1
-        style={{
-          fontFamily: "var(--font-display), serif",
-          fontSize: "40px",
-          fontWeight: 600,
-          color: "var(--color-ink)",
-          textAlign: "center",
-          marginBottom: "36px",
-        }}
-      >
-        About
-      </h1>
+export const revalidate = 300;
 
-      <div
-        style={{
-          fontFamily: "var(--font-reading), serif",
-          fontSize: "19px",
-          lineHeight: 1.9,
-          color: "var(--color-body-muted)",
-        }}
-      >
-        <p style={{ marginBottom: "28px" }}>
-          <strong
-            style={{
-              fontFamily: "var(--font-display), serif",
-              fontWeight: 600,
-              fontSize: "21px",
-              color: "var(--color-ink)",
-            }}
-          >
-            Tattva
-          </strong>{" "}
-          is the intellectual notebook of Manish Maheshwari. It covers Indian textual traditions,
-          philosophy, history, colonial discourse, and the question of how inherited sources of
-          meaning survive under modernity.
-        </p>
-        <p style={{ marginBottom: "28px" }}>
-          Manish runs the <em>Tattva Heritage Foundation</em> (
-          <a
-            href="https://www.tattvaheritage.org"
-            target="_blank"
-            rel="noreferrer noopener"
-            style={{ color: "var(--color-accent)" }}
-            className="underline underline-offset-2"
-          >
-            tattvaheritage.org
-          </a>
-          ) and the <em>Centre for Shaiva Studies</em> (
-          <a
-            href="https://www.shaivastudies.in"
-            target="_blank"
-            rel="noreferrer noopener"
-            style={{ color: "var(--color-accent)" }}
-            className="underline underline-offset-2"
-          >
-            shaivastudies.in
-          </a>
-          ). Contact:{" "}
-          <a
-            href="mailto:contact@tattvamag.org"
-            style={{ color: "var(--color-accent)" }}
-            className="underline underline-offset-2"
-          >
-            contact@tattvamag.org
-          </a>
-          .
-        </p>
+export default async function AboutPage() {
+  const about = await getAbout();
+  const accent = SITE.accent;
+  const tagMuted = SITE.tagMuted;
+
+  return (
+    <main style={{ maxWidth: "640px", margin: "0 auto", padding: "72px 40px 100px" }}>
+      <div style={{ textAlign: "center", marginBottom: "44px" }}>
+        <div
+          style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: "10.5px",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: tagMuted,
+            fontWeight: 600,
+            marginBottom: "14px",
+          }}
+        >
+          About
+        </div>
+        <div style={{ width: "40px", height: "2px", background: accent, margin: "0 auto" }} />
       </div>
+
+      <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "19px", lineHeight: 1.85, color: "#3a3530", margin: 0, whiteSpace: "pre-wrap" }}>
+        <span
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: "22px",
+            fontStyle: "italic",
+            fontWeight: 500,
+          }}
+        >
+          Tattva
+        </span>{" "}
+        {about.intro}
+      </p>
 
       <p
         style={{
-          fontFamily: "var(--font-reading), serif",
-          fontSize: "15px",
-          color: "var(--color-meta-faded)",
-          marginTop: "56px",
-          fontStyle: "italic",
-          borderTop: "1px solid var(--color-divider-soft)",
-          paddingTop: "24px",
-          textAlign: "center",
+          fontFamily: "'Source Serif 4', Georgia, serif",
+          fontSize: "19px",
+          lineHeight: 1.85,
+          color: "#3a3530",
+          marginTop: "28px",
+          whiteSpace: "pre-wrap",
         }}
       >
-        This site is updated periodically.
+        {about.bio}
       </p>
-    </div>
+
+      <p
+        style={{
+          fontFamily: "'Cormorant Garamond', serif",
+          fontSize: "15px",
+          lineHeight: 1.8,
+          color: "#9e958a",
+          marginTop: "48px",
+          fontStyle: "italic",
+          borderTop: "1px solid #e2ddd5",
+          paddingTop: "24px",
+          textAlign: "center",
+          whiteSpace: "pre-wrap",
+        }}
+      >
+        {about.closing}
+      </p>
+    </main>
   );
 }

@@ -76,7 +76,8 @@ export default async function AdminDashboard() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ActionCard href="/admin/new" title="Publish a new article" description="Upload a .docx, add a cover image, and publish." />
-          <ActionCard href="/admin/comments" title="Moderate comments" description="Approve or delete pending reader comments." />
+          <ActionCard href="/admin/comments" title="Moderate comments" description="Approve or delete pending reader letters." />
+          <ActionCard href="/admin/about" title="Edit the About page" description="Update the bio and affiliations shown to readers." />
         </div>
       </section>
     </div>

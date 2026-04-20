@@ -1,110 +1,116 @@
 "use client";
+// Ported from App.jsx's top banner + TattvaHeader.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SITE } from "@/lib/site-config";
 
 const NAV_ITEMS = [
-  { label: "Current", href: "/" },
-  { label: "Archive", href: "/archive" },
-  { label: "About", href: "/about" },
-];
+  { key: "current", href: "/", label: "Current" },
+  { key: "archive", href: "/archive", label: "Archive" },
+  { key: "about", href: "/about", label: "About" },
+] as const;
 
 export default function SiteHeader() {
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
+  const accent = SITE.accent;
 
   const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
-    return pathname?.startsWith(href);
+    if (href === "/") {
+      // "Current" is active on home OR on any article page ([slug])
+      return pathname === "/" || (!pathname.startsWith("/archive") && !pathname.startsWith("/about") && !pathname.startsWith("/notebook") && !pathname.startsWith("/admin"));
+    }
+    return pathname.startsWith(href);
   };
 
   return (
     <>
-      {/* Top accent bar */}
+      {/* Top banner */}
       <div
-        className="w-full text-center"
         style={{
-          background: "var(--color-topbar)",
-          color: "var(--color-topbar-text)",
-          padding: "10px 0",
-          fontFamily: "var(--font-sans), sans-serif",
+          background: "#2B2520",
+          padding: "11px 0",
+          textAlign: "center",
+          fontFamily: "'DM Sans', sans-serif",
           fontSize: "11px",
-          letterSpacing: "0.14em",
+          letterSpacing: "0.24em",
           textTransform: "uppercase",
+          color: "#C4B9A8",
+          fontWeight: 500,
         }}
       >
-        Tradition · Text · Meaning
+        Dharma <span style={{ color: accent, margin: "0 12px" }}>·</span> Text <span style={{ color: accent, margin: "0 12px" }}>·</span> Inheritance
       </div>
 
-      {/* Logo + nav */}
-      <header className="max-w-[1140px] mx-auto px-10 pt-10">
-        <div className="text-center pb-7">
-          <Link href="/" className="inline-block">
-            <h1
-              style={{
-                fontFamily: "var(--font-display), serif",
-                fontSize: "52px",
-                fontWeight: 700,
-                color: "var(--color-ink)",
-                margin: 0,
-                letterSpacing: "0.02em",
-                lineHeight: 1,
-              }}
-            >
-              TATTVA
-            </h1>
+      {/* Masthead */}
+      <header style={{ maxWidth: "1080px", margin: "0 auto", padding: "64px 40px 0" }}>
+        <Link href="/" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
+          <div style={{ textAlign: "center", paddingBottom: "36px" }}>
             <div
               style={{
-                fontFamily: "var(--font-display), serif",
-                fontSize: "13px",
-                color: "var(--color-meta)",
-                marginTop: "6px",
-                fontStyle: "italic",
-                letterSpacing: "0.02em",
+                fontFamily: "'Noto Serif Devanagari', 'Cormorant Garamond', serif",
+                fontSize: "22px",
+                color: accent,
+                letterSpacing: "0.06em",
+                fontWeight: 500,
+                marginBottom: "10px",
               }}
             >
-              Celebrating Dharma
+              तत्त्व
             </div>
-          </Link>
-        </div>
+            <h1
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "76px",
+                fontWeight: 500,
+                color: "#1a1714",
+                margin: 0,
+                letterSpacing: "-0.005em",
+                lineHeight: 0.95,
+              }}
+            >
+              Tattva
+            </h1>
+          </div>
+        </Link>
 
+        {/* Nav bar */}
         <nav
           style={{
-            borderTop: "2px solid var(--color-ink)",
-            borderBottom: "1px solid var(--color-divider)",
+            borderTop: "1px solid #1a1714",
+            borderBottom: "1px solid #d8d2c8",
+            display: "flex",
+            justifyContent: "center",
+            gap: "52px",
+            padding: "16px 0",
           }}
-          className="flex justify-center gap-14 py-4"
         >
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href);
             return (
               <Link
-                key={item.href}
+                key={item.key}
                 href={item.href}
                 style={{
-                  fontFamily: "var(--font-sans), sans-serif",
+                  fontFamily: "'DM Sans', sans-serif",
                   fontSize: "12px",
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
-                  color: active ? "var(--color-ink)" : "var(--color-meta-faded)",
-                  fontWeight: active ? 600 : 400,
-                  position: "relative",
+                  color: active ? accent : "#6b6259",
+                  cursor: "pointer",
+                  fontWeight: active ? 600 : 500,
+                  transition: "color 0.2s ease",
+                  paddingBottom: "2px",
+                  borderBottom: active ? `1.5px solid ${accent}` : "1.5px solid transparent",
+                  textDecoration: "none",
                 }}
-                className="transition-colors hover:text-[color:var(--color-accent)]"
+                onMouseEnter={(e) => {
+                  if (!active) e.currentTarget.style.color = accent;
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.color = "#6b6259";
+                }}
               >
                 {item.label}
-                {active && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      left: "50%",
-                      bottom: "-17px",
-                      transform: "translateX(-50%)",
-                      width: "18px",
-                      height: "2px",
-                      background: "var(--color-accent)",
-                    }}
-                    aria-hidden
-                  />
-                )}
               </Link>
             );
           })}

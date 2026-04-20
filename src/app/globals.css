@@ -1,275 +1,61 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────────
- * Tattva design tokens — mirror src/lib/tokens.ts
+ * Minimal resets & globals (matches the front-end HTML wrapper)
  * ───────────────────────────────────────────────────────────── */
-:root {
-  --color-bg: #FAF8F4;
-  --color-ink: #1a1714;
-  --color-body-muted: #3a3530;
-  --color-body-faded: #5a554e;
-  --color-meta: #7a7168;
-  --color-meta-faded: #9e958a;
-  --color-meta-softest: #b0a89e;
-  --color-divider: #d8d2c8;
-  --color-divider-soft: #e2ddd5;
-  --color-divider-softer: #e8e4dc;
-  --color-tag-border: #d4cdc2;
-  --color-topbar: #2B2520;
-  --color-topbar-text: #C4B9A8;
-  --color-topbar-title: #E8E0D4;
-  --color-accent: #B83A14;
-  --color-hover-warm: #8B5E3C; /* warm brown used on hover in v2 */
-}
-
-@theme inline {
-  --color-background: var(--color-bg);
-  --color-foreground: var(--color-ink);
-  --color-ink: var(--color-ink);
-  --color-body: var(--color-body-muted);
-  --color-body-faded: var(--color-body-faded);
-  --color-meta: var(--color-meta);
-  --color-meta-faded: var(--color-meta-faded);
-  --color-meta-softest: var(--color-meta-softest);
-  --color-divider: var(--color-divider);
-  --color-divider-soft: var(--color-divider-soft);
-  --color-divider-softer: var(--color-divider-softer);
-  --color-tag-border: var(--color-tag-border);
-  --color-topbar: var(--color-topbar);
-  --color-topbar-text: var(--color-topbar-text);
-  --color-topbar-title: var(--color-topbar-title);
-  --color-accent: var(--color-accent);
-  --color-hover-warm: var(--color-hover-warm);
-  --font-display: var(--font-display);
-  --font-display-alt: var(--font-display-alt);
-  --font-reading: var(--font-reading);
-  --font-sans: var(--font-sans);
-}
-
-html, body {
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-reading), Georgia, serif;
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #F4E8D4;
+  color: #1a1714;
+  font-family: "Source Serif 4", Georgia, serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* ─────────────────────────────────────────────────────────────
- * Floating social icons (left edge, like the live site)
- * ───────────────────────────────────────────────────────────── */
-.social-rail {
-  position: fixed;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  z-index: 10;
-}
+::selection { background: rgba(184, 58, 20, 0.18); }
 
-.social-rail a {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-ink);
-  opacity: 0.85;
-  transition: color 0.2s ease, opacity 0.2s ease;
-}
-
-.social-rail a:hover {
-  color: var(--color-accent);
-  opacity: 1;
-}
-
-@media (max-width: 900px) {
-  .social-rail { display: none; }
-}
+button { font-family: inherit; }
 
 /* ─────────────────────────────────────────────────────────────
- * Article body — long-form typography
+ * Responsive — stack all grids below 820px (from the HTML wrapper)
  * ───────────────────────────────────────────────────────────── */
-.article-body {
-  font-family: var(--font-reading), Georgia, serif;
-  color: var(--color-body-muted);
-  font-size: 18px;
-  line-height: 1.85;
+@media (max-width: 820px) {
+  main, header > div, footer > div {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="gridTemplateColumns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+  [style*="grid-template-columns: 1fr 1fr 1fr"],
+  [style*="gridTemplateColumns: 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 48px !important;
+  }
+  .tm-footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+  [aria-hidden="true"][style*="visibility: hidden"] { display: none !important; }
+  .tm-notebook-divider-v { display: none !important; }
+  h1 { font-size: 40px !important; }
+  h2 { font-size: 34px !important; }
 }
 
-.article-body p { margin-bottom: 1.4em; }
-
-.article-body h2 {
-  font-family: var(--font-display), serif;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-ink);
-  margin-top: 2.2em;
-  margin-bottom: 0.7em;
-  line-height: 1.25;
-  letter-spacing: -0.005em;
+@media (max-width: 520px) {
+  h1 { font-size: 32px !important; }
+  h2 { font-size: 28px !important; }
+  .tm-quote-body { font-size: 18px !important; }
 }
 
-.article-body h3 {
-  font-family: var(--font-display), serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--color-ink);
-  margin-top: 1.8em;
-  margin-bottom: 0.5em;
+/* Hide margin footnotes on narrow screens */
+@media (max-width: 1100px) {
+  .tm-margin-note { display: none !important; }
 }
 
-.article-body em, .article-body i { font-style: italic; }
-.article-body strong, .article-body b { font-weight: 700; color: var(--color-ink); }
-
-.article-body a {
-  color: var(--color-accent);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-}
-
-.article-body blockquote {
-  border-left: 2px solid var(--color-accent);
-  padding: 4px 0 4px 28px;
-  margin: 2em 0;
-  font-style: italic;
-  color: var(--color-body-faded);
-  font-size: 17px;
-}
-
-.article-body blockquote p { margin-bottom: 0.4em; }
-
-.article-body figure {
-  margin: 2.4em 0;
-  text-align: center;
-}
-
-.article-body figure img {
-  width: 100%;
-  height: auto;
-  max-width: 100%;
-  border-radius: 2px;
-}
-
-.article-body figcaption,
-.article-body .wp-caption-text {
-  font-family: var(--font-sans), sans-serif;
-  font-size: 12px;
-  color: var(--color-meta);
-  margin-top: 10px;
-  font-style: italic;
-  letter-spacing: 0.02em;
-}
-
-/* Drop cap on the very first paragraph of the article */
-.article-body > p:first-of-type::first-letter {
-  font-family: var(--font-display), serif;
-  font-size: 72px;
-  font-weight: 700;
-  float: left;
-  line-height: 0.88;
-  padding: 6px 14px 0 0;
-  color: var(--color-ink);
-}
-
-/* Footnote inline markers */
-.article-body sup.footnote-ref {
-  color: var(--color-accent);
-  font-family: var(--font-sans), sans-serif;
-  font-size: 0.72em;
-  font-weight: 500;
-  vertical-align: super;
-  line-height: 1;
-  padding: 0 2px;
-  cursor: pointer;
-  text-decoration: none;
-}
-.article-body sup.footnote-ref:hover { text-decoration: underline; }
-
-/* Tufte-style margin footnote — rendered as <aside.footnote-side> immediately after <sup> */
-.article-body aside.footnote-side {
-  float: right;
-  clear: right;
-  width: 210px;
-  margin-right: -250px;
-  margin-top: 0.3em;
-  margin-bottom: 1.2em;
-  padding-left: 6px;
-  font-family: var(--font-reading), Georgia, serif;
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: var(--color-body-faded);
-  position: relative;
-}
-
-.article-body aside.footnote-side .fn-num {
-  color: var(--color-accent);
-  font-family: var(--font-sans), sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  margin-right: 4px;
-  vertical-align: super;
-  line-height: 1;
-}
-
-.article-body aside.footnote-side em,
-.article-body aside.footnote-side i { font-style: italic; }
-
-/* Hide margin footnotes on narrow screens — they show in the bottom list instead */
-@media (max-width: 1099px) {
-  .article-body aside.footnote-side { display: none; }
-}
-
-/* Bottom footnotes list — only visible on mobile/tablet */
-.article-footnotes-bottom {
-  max-width: 660px;
-  margin: 56px auto 0;
-  padding-top: 28px;
-  border-top: 1px solid var(--color-divider-soft);
-  font-family: var(--font-reading), Georgia, serif;
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--color-body-faded);
-}
-
-.article-footnotes-bottom h2 {
-  font-family: var(--font-display), serif;
-  font-size: 18px;
-  color: var(--color-ink);
-  margin-bottom: 16px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.article-footnotes-bottom ol {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  counter-reset: fn;
-}
-
-.article-footnotes-bottom li {
-  margin-bottom: 1em;
-  padding-left: 22px;
-  position: relative;
-}
-
-.article-footnotes-bottom .fn-num {
-  position: absolute;
-  left: 0;
-  top: 1px;
-  color: var(--color-accent);
-  font-family: var(--font-sans), sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-@media (min-width: 1100px) {
-  .article-footnotes-bottom { display: none; }
-}
-
-/* Figure cleanup for WP inline styles */
-.article-body figure[style*="width"] { width: auto !important; }
-.article-body img[srcset] { max-width: 100%; }
+/* Mobile footnote sheet animations */
+@keyframes tmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tmSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }

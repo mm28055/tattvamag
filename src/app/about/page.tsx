@@ -13,6 +13,9 @@ export default async function AboutPage() {
   const about = await getAbout();
   const accent = SITE.accent;
   const tagMuted = SITE.tagMuted;
+  // The template prefixes a styled "Tattva" — strip a leading "Tattva " from the stored
+  // intro so authors can write natural sentences either way.
+  const introBody = about.intro.replace(/^\s*Tattva\s*/, "");
 
   return (
     <main style={{ maxWidth: "640px", margin: "0 auto", padding: "72px 40px 100px" }}>
@@ -44,7 +47,7 @@ export default async function AboutPage() {
         >
           Tattva
         </span>{" "}
-        {about.intro}
+        {introBody}
       </p>
 
       <p

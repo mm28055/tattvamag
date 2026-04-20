@@ -32,14 +32,16 @@ const DATA_DIR = path.join(process.cwd(), "src", "data");
 
 // ---- JSON fallback ----
 function readFromJson(): Article[] {
-  const files = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith(".json"));
+  const files = fs
+    .readdirSync(DATA_DIR)
+    .filter((f) => f.endsWith(".json") && !f.startsWith("_")); // underscore-prefix = support data, skip
   const articles = files.map((f) => {
     const raw = JSON.parse(fs.readFileSync(path.join(DATA_DIR, f), "utf-8")) as Article;
     raw.tags = (raw.tags || []).map((t) => ({ ...t, name: toTitleCase(t.name) }));
     raw.type = raw.type || "essay";
     return raw;
   });
-  articles.sort((a, b) => b.date.localeCompare(a.date));
+  articles.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   return articles;
 }
 

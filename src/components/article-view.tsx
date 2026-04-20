@@ -27,12 +27,16 @@ function parseFootnotes(text: string): Array<string | { footnote: FnToken }> {
 
 function collectFootnotes(fullBody: Block[]): FnToken[] {
   const out: FnToken[] = [];
+  const seen = new Set<string>();
   fullBody.forEach((block) => {
     if (!("text" in block) || !block.text) return;
     const re = /<fn\s+id="([^"]+)"\s+note="((?:[^"\\]|\\.)*)"\s*\/>/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(block.text)) !== null) {
-      out.push({ id: m[1], note: m[2].replace(/\\"/g, '"') });
+      const id = m[1];
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push({ id, note: m[2].replace(/\\"/g, '"') });
     }
   });
   return out;
@@ -468,6 +472,7 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
 
   const blocks: Block[] = article.fullBody || [{ type: "p", text: article.body }];
   const endnotes = collectFootnotes(blocks);
+  const firstParagraphIdx = blocks.findIndex((b) => b.type === "p");
 
   return (
     <article data-article-body data-article-id={article.id}>
@@ -512,12 +517,11 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
           if (block.type === "quote") {
             return <Pullquote key={i} text={block.text} accent={accent} />;
           }
-          const isFirstP = i === 0 || (i === 1 && blocks[0].type === "h2");
           return (
             <BodyParagraph
               key={i}
               text={block.text}
-              dropCap={isFirstP && i === 0}
+              dropCap={i === firstParagraphIdx}
               accent={accent}
               onOpenFn={onOpenFn}
               hoverFnId={hoverFn?.id || null}

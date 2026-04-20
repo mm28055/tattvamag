@@ -74,6 +74,17 @@ function buildBlocksAndInline(
 
     if (tag === "p") {
       const html = $c.html() || "";
+
+      // WordPress often styles section headings as <p> with a big font-size span + <strong>
+      // rather than real <h2>. Promote those to h2 blocks.
+      const styledHeadingMatch = html.match(/^\s*<span[^>]*style="[^"]*font-size:\s*(\d+)/i);
+      const hasStrong = /<strong[^>]*>/i.test(html);
+      const plainText = $c.text().replace(/\s+/g, " ").trim();
+      if (styledHeadingMatch && hasStrong && plainText.length > 0 && plainText.length < 140) {
+        blocks.push({ type: "h2", text: plainText });
+        return;
+      }
+
       const inline = htmlToInline(html);
       const finalText = inline
         .replace(/\|\|\|FN:([^:]+):([\s\S]*?)\|\|\|/g, (_m, num, note) => `<fn id="${num}" note="${note}" />`)
@@ -145,7 +156,25 @@ function toFrontendArticle(a: Awaited<ReturnType<typeof getRawArticles>>[number]
   const tags = (a.tags || []).map((t) => t.name);
   const featured = a.featuredImage || { original: "", local: null };
   const hasImage = !!featured.local;
-  const fullBody = buildBlocksAndInline(a.body || "", a.footnotes || []);
+  let fullBody = buildBlocksAndInline(a.body || "", a.footnotes || []);
+
+  // Dedup: if the first body paragraph is (essentially) the subtitle, drop it —
+  // the subtitle is already rendered in the header.
+  if (a.subtitle && fullBody.length > 0 && fullBody[0].type === "p") {
+    const firstText = (fullBody[0].text || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+    const subtitleText = a.subtitle.replace(/\s+/g, " ").trim();
+    if (firstText === subtitleText || firstText.startsWith(subtitleText) || subtitleText.startsWith(firstText)) {
+      fullBody = fullBody.slice(1);
+    }
+  }
+
+  // Also drop the final "Manish Maheshwari is the curator..." bio paragraph if present
+  if (fullBody.length > 0) {
+    const last = fullBody[fullBody.length - 1];
+    if (last.type === "p" && /is the curator and editor of Tattva/i.test(last.text)) {
+      fullBody = fullBody.slice(0, -1);
+    }
+  }
   const excerpt = a.metaDescription || fullBody.find((b) => b.type === "p")?.text.replace(/<[^>]+>/g, "") || "";
 
   return {

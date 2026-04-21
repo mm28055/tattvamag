@@ -67,7 +67,7 @@ export default function SiteHeader() {
 
       {/* ── Masthead + nav (normal, in-flow) ── */}
       <div ref={mastheadRef}>
-        <header style={{ maxWidth: "1200px", margin: "0 auto", padding: "36px 40px 0" }}>
+        <header className="tm-masthead" style={{ maxWidth: "1200px", margin: "0 auto", padding: "36px 40px 0" }}>
           <Link href="/" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
             <div style={{ textAlign: "center", paddingBottom: "22px" }}>
               <div
@@ -161,6 +161,7 @@ export default function SiteHeader() {
         }}
       >
         <div
+          className="tm-sticky-bar"
           style={{
             maxWidth: "1200px",
             margin: "0 auto",

@@ -22,8 +22,8 @@ button { font-family: inherit; }
  * ───────────────────────────────────────────────────────────── */
 @media (max-width: 820px) {
   main, header > div, footer > div {
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
   }
   [style*="grid-template-columns: 1fr 1fr"],
   [style*="gridTemplateColumns: 1fr 1fr"] {
@@ -43,12 +43,71 @@ button { font-family: inherit; }
   .tm-notebook-divider-v { display: none !important; }
   h1 { font-size: 40px !important; }
   h2 { font-size: 34px !important; }
+
+  /* ── Site header: tighten padding, wordmark, and nav gap on mobile ── */
+  .tm-masthead {
+    padding: 24px 20px 0 !important;
+  }
+  .tm-masthead h1 {
+    font-size: 52px !important;
+  }
+  .tm-masthead nav {
+    gap: 28px !important;
+  }
+  .tm-sticky-bar {
+    padding: 0 20px !important;
+  }
+  .tm-sticky-bar nav {
+    gap: 18px !important;
+  }
+
+  /* ── Article view: internal containers use 40px horizontal padding by
+   * default; that eats >20% of the mobile viewport. Tighten to 20px. ── */
+  [data-article-body] > header,
+  [data-article-body] > figure,
+  [data-article-body] > div,
+  [data-article-body] > section {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  /* Frontispiece image — let the image use the full text column on mobile. */
+  [data-article-body] > figure > div {
+    width: 100% !important;
+  }
+  /* Absolutely-positioned margin-notes column is useless on narrow screens
+   * and can break layout or cause horizontal scroll. Hide it outright. */
+  .tm-margin-note-col { display: none !important; }
+
+  /* ── Home: SecondaryCard has asymmetric padding for desktop dividers;
+   * reset to symmetric edge-padding on mobile once the grid has stacked. ── */
+  [style*="grid-template-columns: 1fr 1fr 1fr"] > article,
+  [style*="gridTemplateColumns: 1fr 1fr 1fr"] > article {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border-right: none !important;
+  }
+  /* Notebook preview cards (2-col grid on desktop) — same reset. */
+  [style*="grid-template-columns: 1fr 1fr"] > article,
+  [style*="gridTemplateColumns: 1fr 1fr"] > article {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border-right: none !important;
+  }
+  /* More Reading columns use nested 1fr 1fr, which stacks — kill the
+   * column divider that was between the A and B columns. */
+  [style*="grid-template-columns: 1fr 1fr"] > div[style*="border-right"] {
+    border-right: none !important;
+  }
 }
 
 @media (max-width: 520px) {
   h1 { font-size: 32px !important; }
   h2 { font-size: 28px !important; }
   .tm-quote-body { font-size: 18px !important; }
+
+  .tm-masthead h1 { font-size: 44px !important; }
+  .tm-masthead nav { gap: 22px !important; }
+  .tm-sticky-bar nav { gap: 14px !important; }
 }
 
 /* Hide margin footnotes on narrow screens */

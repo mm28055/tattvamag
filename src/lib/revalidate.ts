@@ -27,6 +27,12 @@ export function revalidatePublicContent(opts: {
   revalidatePath("/sitemap.xml");
   revalidatePath("/rss.xml");
 
+  // Revalidate all article pages so their allArticles prop (used by the
+  // infinite scroll chain) reflects the current article list. Without this,
+  // deleted or newly-added articles keep appearing/missing in other articles'
+  // scroll chains until those pages happen to be rerendered.
+  revalidatePath("/[slug]", "page");
+
   if (opts.articleSlug) {
     revalidatePath(`/${opts.articleSlug}`);
   }

@@ -1,8 +1,9 @@
 "use client";
 // Quick notebook entry composer. No .docx required — just type.
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { InsertImageButton } from "@/components/admin/InsertImageButton";
 
 export default function NewNotebookEntryPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function NewNotebookEntryPage() {
   const [customId, setCustomId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,7 +53,7 @@ export default function NewNotebookEntryPage() {
         </Link>
       </div>
       <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: "13.5px", color: "#6b6259", marginBottom: "24px", lineHeight: 1.6 }}>
-        Short journal posts — fragments, marginalia, works in progress. Separate paragraphs with a blank line.
+        Short journal posts — fragments, marginalia, works in progress. Markdown is supported: blank lines between paragraphs, **bold**, *italic*, # headings, {">"} quote, and `[link text](https://…)`. Use the button below the body to upload an image.
       </p>
 
       <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -59,8 +61,9 @@ export default function NewNotebookEntryPage() {
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required style={inputStyle} />
         </Field>
 
-        <Field label="Body" required help="Plain text. A blank line between paragraphs renders as two paragraphs on the site.">
-          <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={16} style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }} required />
+        <Field label="Body" required help="Markdown. Blank line = new paragraph. **bold**, *italic*, # heading, > quote, [link](url), ![image](url).">
+          <textarea ref={bodyRef} value={body} onChange={(e) => setBody(e.target.value)} rows={16} style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }} required />
+          <InsertImageButton getTextarea={() => bodyRef.current} onChange={setBody} />
         </Field>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>

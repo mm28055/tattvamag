@@ -1,8 +1,9 @@
 "use client";
 // Edit an existing notebook entry. Prefilled from GET /api/admin/notebook/[id].
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
+import { InsertImageButton } from "@/components/admin/InsertImageButton";
 
 type EntryData = {
   id: string;
@@ -28,6 +29,7 @@ export default function EditNotebookEntryPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     fetch(`/api/admin/notebook/${id}`)
@@ -117,8 +119,9 @@ export default function EditNotebookEntryPage() {
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required style={inputStyle} />
           </Field>
 
-          <Field label="Body" required help="Plain text. Blank lines separate paragraphs.">
-            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={16} style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }} required />
+          <Field label="Body" required help="Markdown. Blank line = new paragraph. **bold**, *italic*, # heading, > quote, [link](url), ![image](url).">
+            <textarea ref={bodyRef} value={body} onChange={(e) => setBody(e.target.value)} rows={16} style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }} required />
+            <InsertImageButton getTextarea={() => bodyRef.current} onChange={setBody} />
           </Field>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>

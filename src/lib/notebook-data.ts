@@ -1,6 +1,7 @@
 // Notebook entries. Reads from Neon when DATABASE_URL is set; falls back to the
 // hardcoded seed JSON when running without a database (e.g. first-time local dev).
 import "server-only";
+import { marked } from "marked";
 import seed from "@/data/_notebook-seed.json";
 import { sql, hasDb } from "./db";
 import type { FrontendNotebookEntry } from "./frontend-types";
@@ -24,7 +25,7 @@ function formatLongDate(iso: string): string {
   }
 }
 
-function rowToEntry(r: DbRow): FrontendNotebookEntry {
+async function rowToEntry(r: DbRow): Promise<FrontendNotebookEntry> {
   return {
     id: r.id,
     title: r.title,
@@ -33,7 +34,8 @@ function rowToEntry(r: DbRow): FrontendNotebookEntry {
     datePublished: formatLongDate(typeof r.date_published === "string"
       ? r.date_published
       : new Date(r.date_published).toISOString().slice(0, 10)),
-    body: r.body, // Rendered as a plain string — \n\n splits paragraphs on the frontend.
+    body: r.body,
+    bodyHtml: await marked.parse(r.body, { breaks: false, gfm: true }),
   };
 }
 
@@ -47,10 +49,12 @@ async function readFromDb(): Promise<FrontendNotebookEntry[]> {
     SELECT * FROM notebook_entries
     ORDER BY display_order ASC NULLS LAST, date_published DESC
   `) as DbRow[];
-  return rows.map(rowToEntry);
+  return Promise.all(rows.map(rowToEntry));
 }
 
 function readFromSeed(): FrontendNotebookEntry[] {
+  // Seed entries are plain-text bodies; no pre-rendered HTML. The renderer's
+  // fallback path handles Block[] arrays and \n\n-split strings.
   return seed as FrontendNotebookEntry[];
 }
 

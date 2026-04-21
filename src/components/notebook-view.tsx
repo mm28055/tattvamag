@@ -78,13 +78,20 @@ function NotebookEntryBlock({
   isLast: boolean;
   anchorRef: (el: HTMLElement | null) => void;
 }) {
-  const blocks: Block[] = Array.isArray(entry.body)
-    ? (entry.body as Block[])
-    : (entry.body as string)
-        .split(/\n\n+/)
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .map((text) => ({ type: "p", text } as Block));
+  // When the entry has pre-rendered markdown HTML (admin-authored entries), use
+  // it directly via dangerouslySetInnerHTML. Otherwise fall back to the original
+  // block-based rendering (legacy seed entries with Block[] bodies or plain \n\n
+  // text).
+  const hasHtml = typeof entry.bodyHtml === "string" && entry.bodyHtml.length > 0;
+  const blocks: Block[] = hasHtml
+    ? []
+    : Array.isArray(entry.body)
+      ? (entry.body as Block[])
+      : (entry.body as string)
+          .split(/\n\n+/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((text) => ({ type: "p", text } as Block));
 
   return (
     <article
@@ -104,8 +111,13 @@ function NotebookEntryBlock({
       </h2>
 
       {/* Body */}
-      <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "16.5px", lineHeight: 1.72, color: "#2a2520" }}>
-        {blocks.map((b, i) => {
+      <div
+        className="tm-notebook-body"
+        style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "16.5px", lineHeight: 1.72, color: "#2a2520" }}
+      >
+        {hasHtml ? (
+          <div dangerouslySetInnerHTML={{ __html: entry.bodyHtml! }} />
+        ) : blocks.map((b, i) => {
           if (b.type === "image") {
             const aspect = b.aspectRatio || "3 / 2";
             return (

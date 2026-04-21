@@ -32,6 +32,8 @@ export type FrontendNotebookEntry = {
   author: string;
   datePublished?: string;
   body: string | Block[];
+  /** Pre-rendered HTML from markdown `body`. Present when body is a string. */
+  bodyHtml?: string;
 };
 
 export type FrontendEpigraph = { lines: string[]; attribution: string };

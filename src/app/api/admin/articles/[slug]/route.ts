@@ -189,6 +189,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
   const tagsRaw = String(form.get("tags") || "").trim();
   const type = String(form.get("type") || "essay").trim() === "note" ? "note" : "essay";
   const illustrator = String(form.get("illustrator") || "").trim();
+  const author = String(form.get("author") || "").trim() || null;
   const displayOrderRaw = String(form.get("displayOrder") || "").trim();
   // "" or missing → unset (NULL). Otherwise coerce to integer, clamp to sane range.
   const displayOrder: number | null =
@@ -284,6 +285,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
       type              = ${type},
       title             = ${title},
       subtitle          = ${subtitle},
+      author            = COALESCE(${author}, author),
       category_slug     = ${categorySlug},
       category_name     = ${CATEGORIES[categorySlug]},
       illustrator       = ${illustrator},

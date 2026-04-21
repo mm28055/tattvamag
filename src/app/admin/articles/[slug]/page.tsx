@@ -17,6 +17,7 @@ type ArticleData = {
   type: "essay" | "note";
   title: string;
   subtitle: string;
+  author: string;
   categorySlug: string;
   illustrator: string;
   tags: string;
@@ -49,20 +50,20 @@ export default function AdminEditArticlePage() {
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [displayOrder, setDisplayOrder] = useState<string>("");
 
+  const [author, setAuthor] = useState("");
+  const [authors, setAuthors] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    fetch(`/api/admin/articles/${slug}`)
-      .then(async (r) => {
-        if (r.status === 404) {
-          setNotFound(true);
-          return;
-        }
-        if (!r.ok) throw new Error(await r.text());
-        const json = await r.json();
-        const a: ArticleData = json.article;
+    Promise.all([
+      fetch(`/api/admin/articles/${slug}`).then((r) => r.json()),
+      fetch("/api/admin/author-bio").then((r) => r.json()),
+    ])
+      .then(([articleJson, biosJson]) => {
+        if (articleJson.error === "Not found") { setNotFound(true); return; }
+        const a: ArticleData = articleJson.article;
         setData(a);
         setTitle(a.title);
         setSubtitle(a.subtitle || "");
@@ -72,6 +73,12 @@ export default function AdminEditArticlePage() {
         setDisplayOrder(a.displayOrder == null ? "" : String(a.displayOrder));
         setBodyHtml(a.bodyHtml || "");
         setInitialBodyHtml(a.bodyHtml || "");
+        const names = Object.keys(biosJson.bios || {});
+        setAuthors(names);
+        // Pre-select the article's current author; add it to the list if not already there.
+        const current = a.author || "";
+        setAuthor(current);
+        if (current && !names.includes(current)) setAuthors([current, ...names]);
       })
       .catch(() => setMessage({ kind: "error", text: "Failed to load article." }))
       .finally(() => setLoading(false));
@@ -89,6 +96,7 @@ export default function AdminEditArticlePage() {
     form.append("tags", tags);
     form.append("illustrator", illustrator);
     form.append("displayOrder", displayOrder);
+    form.append("author", author);
     // Only re-submit the body if the editor actually changed it.
     if (bodyHtml && bodyHtml !== initialBodyHtml) {
       form.append("htmlBody", bodyHtml);
@@ -193,6 +201,12 @@ export default function AdminEditArticlePage() {
 
           <Field label="Tags" help="Comma-separated.">
             <input type="text" value={tags} onChange={(e) => setTags(e.target.value)} style={inputStyle} />
+          </Field>
+
+          <Field label="Author" required>
+            <select value={author} onChange={(e) => setAuthor(e.target.value)} style={inputStyle}>
+              {authors.map((a) => <option key={a} value={a}>{a}</option>)}
+            </select>
           </Field>
 
           <Field label="Cover image caption" help="Shown as an italic caption under the cover image. Leave blank for none.">

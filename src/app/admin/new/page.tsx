@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RichEditor from "@/components/admin/RichEditor";
@@ -22,8 +22,21 @@ export default function NewArticlePage() {
   const [illustrator, setIllustrator] = useState("");
   const [slug, setSlug] = useState("");
   const [displayOrder, setDisplayOrder] = useState("");
+  const [author, setAuthor] = useState("");
+  const [authors, setAuthors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/author-bio")
+      .then((r) => r.json())
+      .then((d) => {
+        const names = Object.keys(d.bios || {});
+        setAuthors(names);
+        if (names.length > 0) setAuthor(names[0]);
+      })
+      .catch(() => {});
+  }, []);
 
   async function uploadImage(imgFile: File): Promise<string | null> {
     const form = new FormData();
@@ -66,6 +79,7 @@ export default function NewArticlePage() {
     form.append("illustrator", illustrator);
     form.append("slug", slug);
     form.append("displayOrder", displayOrder);
+    form.append("author", author);
 
     const res = await fetch("/api/admin/articles", { method: "POST", body: form });
     setSubmitting(false);
@@ -179,6 +193,13 @@ export default function NewArticlePage() {
             onChange={(e) => setTags(e.target.value)}
             style={inputStyle}
           />
+        </Field>
+
+        <Field label="Author" required>
+          <select value={author} onChange={(e) => setAuthor(e.target.value)} style={inputStyle} disabled={authors.length === 0}>
+            {authors.length === 0 && <option value="">No authors set up — add one in Author Bios</option>}
+            {authors.map((a) => <option key={a} value={a}>{a}</option>)}
+          </select>
         </Field>
 
         <Field label="Cover image caption" help="Shown as an italic caption under the cover image. Leave blank for none.">

@@ -60,6 +60,7 @@ export async function POST(req: Request) {
   const type = (String(form.get("type") || "essay").trim() === "note") ? "note" : "essay";
   const illustrator = String(form.get("illustrator") || "").trim();
   const customSlug = String(form.get("slug") || "").trim();
+  const author = String(form.get("author") || "").trim() || "Manish Maheshwari";
   const displayOrderRaw = String(form.get("displayOrder") || "").trim();
   const displayOrder: number | null =
     displayOrderRaw === "" ? null : Math.max(1, Math.min(99, parseInt(displayOrderRaw, 10) || 0)) || null;
@@ -198,7 +199,7 @@ export async function POST(req: Request) {
       ${subtitle},
       ${metaDescription},
       CURRENT_DATE,
-      ${"Manish Maheshwari"},
+      ${author},
       ${estimateReadTime(html)},
       ${illustrator},
       ${categorySlug},

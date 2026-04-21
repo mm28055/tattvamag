@@ -289,6 +289,7 @@ function toFrontendArticle(a: Awaited<ReturnType<typeof getRawArticles>>[number]
     datePublished: formatDate(a.date),
     illustrationCredit: a.illustrator ? `Illustrations by ${a.illustrator}` : undefined,
     fullBody,
+    displayOrder: a.displayOrder ?? null,
   };
 }
 

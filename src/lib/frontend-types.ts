@@ -23,6 +23,7 @@ export type FrontendArticle = {
   datePublished?: string;
   illustrationCredit?: string;
   fullBody?: Block[];    // block list used on the article page
+  displayOrder?: number | null; // homepage slot (1-based), or null/undefined if unpinned
 };
 
 export type FrontendNotebookEntry = {

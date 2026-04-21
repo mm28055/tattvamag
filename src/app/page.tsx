@@ -10,14 +10,36 @@ import {
   NotebookSection,
 } from "@/components/home-sections";
 import { ShowMoreLink } from "@/components/common";
+import type { FrontendArticle } from "@/lib/frontend-types";
 
 export const revalidate = 300;
+
+// Place articles into homepage slots 1..N. Pinned articles (displayOrder set)
+// go into their exact slot; remaining slots are filled from unpinned articles
+// in the order supplied (date-DESC from the DB).
+function arrangeSlots(articles: FrontendArticle[], slotCount: number): (FrontendArticle | undefined)[] {
+  const slots: (FrontendArticle | undefined)[] = new Array(slotCount);
+  const leftover: FrontendArticle[] = [];
+  for (const a of articles) {
+    const s = a.displayOrder;
+    if (s && s >= 1 && s <= slotCount && !slots[s - 1]) {
+      slots[s - 1] = a;
+    } else {
+      leftover.push(a);
+    }
+  }
+  let i = 0;
+  for (let idx = 0; idx < slotCount; idx++) {
+    if (!slots[idx]) slots[idx] = leftover[i++];
+  }
+  return slots;
+}
 
 export default async function HomePage() {
   const all = await getFrontendArticles();
   const notebook = await getAllNotebookEntriesAsync();
 
-  const [featured, s1, s2, s3, a1, a2, b] = all;
+  const [featured, s1, s2, s3, a1, a2, b] = arrangeSlots(all, 7);
   if (!featured) {
     return (
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "80px 40px", textAlign: "center" }}>

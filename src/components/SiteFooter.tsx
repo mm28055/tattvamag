@@ -86,7 +86,7 @@ export default function SiteFooter() {
             Correspondence
           </div>
           <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "13px", lineHeight: 1.65, color: "#C4B9A8", margin: 0 }}>
-            Letters and responses: <span style={{ color: "#E8E0D4" }}>correspondence@tattvamag.in</span>
+            Letters and responses: <span style={{ color: "#E8E0D4" }}>manishmaheswari@gmail.com</span>
           </p>
           <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "13px", lineHeight: 1.65, color: "#8B8079", marginTop: "14px" }}>
             <em>Tattva Heritage Foundation</em>, Kolkata

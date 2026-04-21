@@ -234,7 +234,7 @@ export function MoreReadingSection({
           More Reading
         </div>
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#b0a89e", fontWeight: 500 }}>
-          Essays {anyImage ? "· with imagery" : "in progress"}
+          Essays
         </div>
       </div>
       <div style={{ height: "1px", background: "#e2ddd5", marginBottom: "8px" }} />

@@ -28,6 +28,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           title="Tattva — Celebrating Dharma"
           href="/rss.xml"
         />
+        {/* Font Awesome — used for the social share icons at the end of articles */}
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        />
       </head>
       <body>
         <SiteHeader />

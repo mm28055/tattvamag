@@ -58,6 +58,16 @@ export default function SiteFooter() {
             <Link href="/archive" style={{ color: "inherit", textDecoration: "none" }}>Archive</Link>
             <Link href="/notebook" style={{ color: "inherit", textDecoration: "none" }}>Notebook</Link>
             <Link href="/about" style={{ color: "inherit", textDecoration: "none" }}>About</Link>
+            <a
+              href="/rss.xml"
+              style={{ color: "inherit", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}
+              title="Subscribe via RSS"
+            >
+              <svg width="12" height="12" viewBox="0 0 20 20" fill={accent} aria-hidden="true">
+                <path d="M2 4.5a1.5 1.5 0 0 1 1.5-1.5A12.5 12.5 0 0 1 17 15.5a1.5 1.5 0 0 1-3 0A9.5 9.5 0 0 0 3.5 6 1.5 1.5 0 0 1 2 4.5ZM2 11a1.5 1.5 0 0 1 1.5-1.5A6 6 0 0 1 10.5 16.5a1.5 1.5 0 0 1-3 0A3 3 0 0 0 3.5 12.5 1.5 1.5 0 0 1 2 11Zm2.75 3.75a1.75 1.75 0 1 1 0 3.5 1.75 1.75 0 0 1 0-3.5Z"/>
+              </svg>
+              RSS
+            </a>
           </div>
         </div>
 

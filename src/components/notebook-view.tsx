@@ -1,6 +1,8 @@
 "use client";
 // Notebook page: stream of dated fragments. Ported from Notebook.jsx.
 import React, { useEffect, useRef } from "react";
+import Link from "next/link";
+import type { Route } from "next";
 import type { FrontendNotebookEntry, Block } from "@/lib/frontend-types";
 
 export default function NotebookView({ entries, accent, tagMuted }: { entries: FrontendNotebookEntry[]; accent: string; tagMuted: string }) {
@@ -176,7 +178,15 @@ function NotebookEntryBlock({
       {entry.tags && entry.tags.length > 0 && (
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "20px", fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", color: tagMuted, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600 }}>
           {entry.tags.map((t) => (
-            <span key={t}>{t}</span>
+            <Link
+              key={t}
+              href={`/archive?tab=notebook&tag=${encodeURIComponent(t)}` as Route}
+              style={{ color: tagMuted, textDecoration: "none", transition: "opacity 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.65"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+            >
+              {t}
+            </Link>
           ))}
         </div>
       )}

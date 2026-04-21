@@ -687,23 +687,31 @@ function ShareAndBio({
   const encodedUrl = encodeURIComponent(shareUrl || `/${slug}`);
   const encodedTitle = encodeURIComponent(title);
 
-  const targets = [
+  const targets: { name: string; href: string; faIcon?: string; svg?: React.ReactNode }[] = [
     {
       name: "Facebook",
       href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-      icon: "fa-facebook",
+      faIcon: "fa-facebook",
     },
     {
-      name: "Twitter",
+      name: "X",
       href: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
-      icon: "fa-twitter",
+      svg: (
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          style={{ width: "15px", height: "15px", fill: "currentColor", display: "block" }}
+        >
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644z" />
+        </svg>
+      ),
     },
     {
       name: "WhatsApp",
       href: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
-      icon: "fa-whatsapp",
+      faIcon: "fa-whatsapp",
     },
-  ] as const;
+  ];
 
   return (
     <section
@@ -738,7 +746,7 @@ function ShareAndBio({
               } as React.CSSProperties
             }
           >
-            <i className={`fab ${t.icon}`} style={{ fontSize: "15px" }} aria-hidden="true" />
+            {t.svg ?? <i className={`fab ${t.faIcon}`} style={{ fontSize: "15px" }} aria-hidden="true" />}
           </a>
         ))}
       </div>

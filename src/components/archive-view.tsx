@@ -22,11 +22,13 @@ export default function ArchiveView({
   notebookEntries,
   accent,
   tagMuted,
+  authorBio,
 }: {
   articles: FrontendArticle[];
   notebookEntries: FrontendNotebookEntry[];
   accent: string;
   tagMuted: string;
+  authorBio?: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -259,6 +261,13 @@ export default function ArchiveView({
             </span>
           )}
           <span onClick={clearAll} style={{ color: "#8b7f72", textDecoration: "underline", cursor: "pointer", marginLeft: "8px" }}>clear all</span>
+        </div>
+      )}
+
+      {/* Author bio */}
+      {activeAuthor && authorBio && (
+        <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14px", lineHeight: 1.7, color: "#5a5048", marginBottom: "28px", paddingBottom: "28px", borderBottom: "1px solid #d8d2c8" }}>
+          {authorBio}
         </div>
       )}
 

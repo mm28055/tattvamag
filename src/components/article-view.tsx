@@ -562,7 +562,7 @@ function MobileFnSheet({ fn, onClose, accent }: { fn: FnToken | null; onClose: (
 }
 
 // ══════ Article body renderer ══════
-function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize, authorBio }: { article: FrontendArticle; accent: string; tagMuted: string; measure: number; bodyFontSize: number; authorBio?: string }) {
+function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { article: FrontendArticle; accent: string; tagMuted: string; measure: number; bodyFontSize: number }) {
   const [hoverFn, setHoverFn] = useState<FnToken | null>(null);
   const [activeFn, setActiveFn] = useState<FnToken | null>(null);
 
@@ -658,7 +658,7 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize, authorB
       </div>
 
       <Endnotes notes={endnotes} accent={accent} />
-      <ShareAndBio slug={article.slug} title={article.title} accent={accent} authorBio={authorBio} />
+      <ShareAndBio slug={article.slug} title={article.title} accent={accent} />
       <MobileFnSheet fn={activeFn} onClose={() => setActiveFn(null)} accent={accent} />
     </article>
   );
@@ -669,12 +669,10 @@ function ShareAndBio({
   slug,
   title,
   accent,
-  authorBio,
 }: {
   slug: string;
   title: string;
   accent: string;
-  authorBio?: string;
 }) {
   const [shareUrl, setShareUrl] = useState("");
   useEffect(() => {
@@ -751,21 +749,6 @@ function ShareAndBio({
         ))}
       </div>
 
-      {authorBio && (
-        <div
-          style={{
-            border: `1px solid ${accent}`,
-            padding: "18px 22px",
-            fontFamily: "'Source Serif 4', Georgia, serif",
-            fontSize: "14.5px",
-            lineHeight: 1.65,
-            color: "#3a3530",
-          }}
-        >
-          {authorBio}
-        </div>
-      )}
-
       <style>{`
         .tm-share-btn:hover {
           background: var(--tm-share-accent) !important;
@@ -813,7 +796,6 @@ export default function ArticleView({
   tagMuted,
   measure,
   bodyFontSize,
-  authorBio,
 }: {
   startArticle: FrontendArticle;
   allArticles: FrontendArticle[];
@@ -821,7 +803,6 @@ export default function ArticleView({
   tagMuted: string;
   measure: number;
   bodyFontSize: number;
-  authorBio?: string;
 }) {
   const [chain, setChain] = useState<string[]>([startArticle.id]);
 
@@ -905,7 +886,7 @@ export default function ArticleView({
                 <div style={{ height: "1px", background: accent, opacity: 0.35, width: "100%" }} />
               </div>
             )}
-            <ArticleBody article={article} accent={accent} tagMuted={tagMuted} measure={measure} bodyFontSize={bodyFontSize} authorBio={authorBio} />
+            <ArticleBody article={article} accent={accent} tagMuted={tagMuted} measure={measure} bodyFontSize={bodyFontSize} />
             <CommentsClient slug={article.slug} accent={accent} />
             {isLast && nextArticle && (
               <>

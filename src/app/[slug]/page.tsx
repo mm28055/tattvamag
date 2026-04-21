@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getFrontendArticles, getFrontendArticleBySlug } from "@/lib/frontend-data";
-import { getAuthorBio } from "@/lib/author-bio";
 import { SITE } from "@/lib/site-config";
 import ArticleView from "@/components/article-view";
 
@@ -30,7 +29,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = await getFrontendArticleBySlug(slug);
   if (!article) return notFound();
   const all = await getFrontendArticles();
-  const authorBio = await getAuthorBio();
 
   return (
     <ArticleView
@@ -40,7 +38,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       tagMuted={SITE.tagMuted}
       measure={SITE.measure}
       bodyFontSize={SITE.bodyFontSize}
-      authorBio={authorBio}
     />
   );
 }

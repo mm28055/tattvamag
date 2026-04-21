@@ -80,7 +80,7 @@ export function FeaturedEssay({
                 fontFamily: "'Source Serif 4', Georgia, serif",
                 fontSize: "17px",
                 lineHeight: 1.8,
-                color: "#3a3530",
+                color: "#5a554e",
                 margin: 0,
               }}
             >
@@ -116,7 +116,7 @@ export function FeaturedEssay({
             fontFamily: "'Source Serif 4', Georgia, serif",
             fontSize: "17px",
             lineHeight: 1.8,
-            color: "#3a3530",
+            color: "#5a554e",
             margin: 0,
             textAlign: "left",
           }}

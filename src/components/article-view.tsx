@@ -332,6 +332,11 @@ function BodyParagraph({
   const noteElsRef = useRef<Map<string, HTMLElement>>(new Map());
   const [notePositions, setNotePositions] = useState<Record<string, number> | null>(null);
 
+  // minHeight ensures the wrapper is tall enough to contain its absolutely-
+  // positioned margin notes — without it, a short paragraph with a long note
+  // lets the note overflow onto the next paragraph.
+  const [minHeight, setMinHeight] = useState<number | undefined>(undefined);
+
   const noteRef = useCallback((id: string) => (el: HTMLElement | null) => {
     if (el) noteElsRef.current.set(id, el);
     else noteElsRef.current.delete(id);
@@ -343,6 +348,16 @@ function BodyParagraph({
     const measure = () => {
       const wrap = wrapRef.current;
       if (!wrap) return;
+
+      // Only align notes when the margin column is visible (>1100px).
+      // Below that breakpoint notes are hidden via CSS, so leave positions
+      // and minHeight unset to avoid pushing paragraphs apart for nothing.
+      if (window.innerWidth <= 1100) {
+        setNotePositions(null);
+        setMinHeight(undefined);
+        return;
+      }
+
       const wrapTop = wrap.getBoundingClientRect().top;
 
       let prevBottom = 0;
@@ -360,6 +375,9 @@ function BodyParagraph({
       }
 
       setNotePositions(result);
+      // If the last note extends below the paragraph text, grow the wrapper
+      // so it doesn't overlap the next paragraph.
+      setMinHeight(prevBottom > 0 ? prevBottom : undefined);
     };
 
     // Measure after fonts are ready (affects line wrapping → marker position)
@@ -372,7 +390,7 @@ function BodyParagraph({
   }, [text]);
 
   return (
-    <div ref={wrapRef} style={{ position: "relative", margin: "0 0 26px" }}>
+    <div ref={wrapRef} style={{ position: "relative", margin: "0 0 26px", minHeight }}>
       <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: `${fontSize}px`, lineHeight: 1.75, color: "#2a2520", margin: 0, textAlign: "left" }}>
         {firstChar && (
           <span

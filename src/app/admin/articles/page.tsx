@@ -74,7 +74,7 @@ export default async function AdminArticlesPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "70px minmax(0, 1fr) 160px 100px 60px",
+            gridTemplateColumns: "70px minmax(0, 1fr) 100px 60px",
             padding: "12px 18px",
             borderBottom: "1px solid #e8e2d6",
             fontFamily: "'DM Sans', sans-serif",
@@ -88,7 +88,6 @@ export default async function AdminArticlesPage() {
         >
           <span>Slot</span>
           <span>Title</span>
-          <span>Category</span>
           <span>Date</span>
           <span style={{ textAlign: "right" }}>Type</span>
         </div>
@@ -99,7 +98,7 @@ export default async function AdminArticlesPage() {
             href={`/admin/articles/${a.slug}`}
             style={{
               display: "grid",
-              gridTemplateColumns: "70px minmax(0, 1fr) 160px 100px 60px",
+              gridTemplateColumns: "70px minmax(0, 1fr) 100px 60px",
               padding: "14px 18px",
               borderBottom: "1px solid #f0eadd",
               textDecoration: "none",
@@ -131,15 +130,6 @@ export default async function AdminArticlesPage() {
               }}
             >
               {a.title}
-            </span>
-            <span
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "12px",
-                color: "#6b6259",
-              }}
-            >
-              {a.category.name}
             </span>
             <span
               style={{

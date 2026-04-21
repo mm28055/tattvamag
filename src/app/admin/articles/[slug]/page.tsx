@@ -44,7 +44,6 @@ export default function AdminEditArticlePage() {
   const [type, setType] = useState<"essay" | "note">("essay");
   const [tags, setTags] = useState("");
   const [illustrator, setIllustrator] = useState("");
-  const [file, setFile] = useState<File | null>(null);
   const [bodyHtml, setBodyHtml] = useState("");
   // Value loaded from the server — used to detect whether the editor changed
   // the body. Unchanged at save time → don't re-submit, which keeps the
@@ -94,9 +93,8 @@ export default function AdminEditArticlePage() {
     form.append("tags", tags);
     form.append("illustrator", illustrator);
     form.append("displayOrder", displayOrder);
-    if (file) form.append("file", file);
     // Only re-submit the body if the editor actually changed it.
-    if (!file && bodyHtml && bodyHtml !== initialBodyHtml) {
+    if (bodyHtml && bodyHtml !== initialBodyHtml) {
       form.append("htmlBody", bodyHtml);
     }
     if (coverImage) form.append("coverImage", coverImage);
@@ -105,7 +103,6 @@ export default function AdminEditArticlePage() {
     setSaving(false);
     if (res.ok) {
       setMessage({ kind: "success", text: "Saved — changes are live." });
-      setFile(null);
       setCoverImage(null);
       // Clear file inputs
       document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((el) => (el.value = ""));
@@ -218,7 +215,7 @@ export default function AdminEditArticlePage() {
             <input type="text" value={tags} onChange={(e) => setTags(e.target.value)} style={inputStyle} />
           </Field>
 
-          <Field label="Illustrator">
+          <Field label="Cover image caption" help="Shown as an italic caption under the cover image. Leave blank for none.">
             <input type="text" value={illustrator} onChange={(e) => setIllustrator(e.target.value)} style={inputStyle} />
           </Field>
 
@@ -238,21 +235,9 @@ export default function AdminEditArticlePage() {
           </Field>
 
           <Field
-            label="Replace body (.docx)"
-            help={`Optional. Uploading a .docx replaces the body below (${data?.footnoteCount ?? 0} footnote${data?.footnoteCount === 1 ? "" : "s"}, ${data?.readTime || "—"}).`}
-          >
-            <input
-              type="file"
-              accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              style={fileInputStyle}
-            />
-          </Field>
-
-          <Field
             as="div"
             label="Body"
-            help="Bold, italic, headings, lists, quotes, links, images with editable alt text, and inline colour. Click a footnote marker (e.g. ¹) to select it, then hit “Edit footnote” in the toolbar to change or delete its text. Leave untouched to keep the current body; uploading a .docx above wins over edits here."
+            help={`${data?.footnoteCount ?? 0} footnote${data?.footnoteCount === 1 ? "" : "s"} · ${data?.readTime || "—"}. Bold, italic, headings, lists, quotes, links, images with editable alt text, and inline colour. Click a footnote marker (e.g. ¹) to select it, then hit "Edit footnote" in the toolbar to change or delete its text.`}
           >
             <RichEditor value={bodyHtml} onChange={setBodyHtml} onUploadImage={uploadImage} />
           </Field>

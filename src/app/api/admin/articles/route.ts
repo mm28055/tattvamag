@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { sql, hasDb } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
-import { saveCoverImage } from "@/lib/r2";
+import { saveCoverImage, uploadMedia, hasR2 } from "@/lib/r2";
 import { markdownToArticleHtml } from "@/lib/markdown";
 import { extractFootnotesFromEditorHtml } from "@/lib/editor-html";
 import { revalidatePublicContent } from "@/lib/revalidate";
@@ -60,6 +60,9 @@ export async function POST(req: Request) {
   const type = (String(form.get("type") || "essay").trim() === "note") ? "note" : "essay";
   const illustrator = String(form.get("illustrator") || "").trim();
   const customSlug = String(form.get("slug") || "").trim();
+  const displayOrderRaw = String(form.get("displayOrder") || "").trim();
+  const displayOrder: number | null =
+    displayOrderRaw === "" ? null : Math.max(1, Math.min(99, parseInt(displayOrderRaw, 10) || 0)) || null;
 
   // Require one of: .docx upload, typed markdown body, or rich-editor HTML.
   if (!file && !markdownBody && !htmlBody) {
@@ -76,9 +79,27 @@ export async function POST(req: Request) {
   if (file) {
     // ── Convert .docx to HTML via Mammoth (existing path)
     const buf = Buffer.from(await file.arrayBuffer());
+    const convertImage = mammoth.images.imgElement(async (element: { read: (enc: string) => Promise<string>; contentType?: string; altText?: string }) => {
+      const base64Data = await element.read("base64");
+      const contentType = element.contentType || "image/png";
+      if (hasR2) {
+        try {
+          const imgBuf = Buffer.from(base64Data, "base64");
+          const ext = contentType.split("/")[1] || "png";
+          const { url } = await uploadMedia({
+            buffer: imgBuf,
+            originalName: `docx-img.${ext}`,
+            contentType,
+          });
+          return { src: url, alt: element.altText || "" };
+        } catch { /* fall through to base64 */ }
+      }
+      return { src: `data:${contentType};base64,${base64Data}`, alt: element.altText || "" };
+    });
     const result = await mammoth.convertToHtml(
       { buffer: buf },
       {
+        convertImage,
         styleMap: [
           "p[style-name='Title'] => h1",
           "p[style-name='Heading 1'] => h2",
@@ -86,6 +107,9 @@ export async function POST(req: Request) {
           "p[style-name='Heading 3'] => h4",
           "p[style-name='Block Text'] => blockquote > p",
           "p[style-name='Quote'] => blockquote > p",
+          "p[style-name='Caption'] => p.caption:fresh",
+          "p[style-name='caption'] => p.caption:fresh",
+          "p[style-name='Image Caption'] => p.caption:fresh",
         ],
       },
     );
@@ -166,7 +190,7 @@ export async function POST(req: Request) {
     INSERT INTO articles (
       slug, type, title, subtitle, meta_description, date, author,
       read_time, illustrator, category_slug, category_name,
-      featured_image, body, body_markdown, footnotes, tags
+      featured_image, body, body_markdown, footnotes, tags, display_order
     ) VALUES (
       ${slug},
       ${type},
@@ -183,7 +207,8 @@ export async function POST(req: Request) {
       ${html},
       ${bodyMarkdownSource},
       ${JSON.stringify(footnotes)}::jsonb,
-      ${JSON.stringify(tagList)}::jsonb
+      ${JSON.stringify(tagList)}::jsonb,
+      ${displayOrder}
     )
   `;
 

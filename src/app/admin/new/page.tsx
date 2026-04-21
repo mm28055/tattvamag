@@ -24,6 +24,7 @@ export default function NewArticlePage() {
   const [type, setType] = useState<"essay" | "note">("essay");
   const [illustrator, setIllustrator] = useState("");
   const [slug, setSlug] = useState("");
+  const [displayOrder, setDisplayOrder] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -67,6 +68,7 @@ export default function NewArticlePage() {
     form.append("type", type);
     form.append("illustrator", illustrator);
     form.append("slug", slug);
+    form.append("displayOrder", displayOrder);
 
     const res = await fetch("/api/admin/articles", { method: "POST", body: form });
     setSubmitting(false);
@@ -201,7 +203,7 @@ export default function NewArticlePage() {
           />
         </Field>
 
-        <Field label="Illustrator" help="Optional — credit under the cover image.">
+        <Field label="Cover image caption" help="Shown as an italic caption under the cover image. Leave blank for none.">
           <input
             type="text"
             value={illustrator}
@@ -216,6 +218,21 @@ export default function NewArticlePage() {
             accept="image/jpeg,image/png,image/webp"
             onChange={(e) => setCoverImage(e.target.files?.[0] || null)}
             style={fileInputStyle}
+          />
+        </Field>
+
+        <Field
+          label="Homepage position"
+          help="1–7 to pin this piece to the homepage in that slot (1 = big featured, 2-4 = grid, 5-7 = more reading). Leave blank to fall back to newest-first ordering."
+        >
+          <input
+            type="number"
+            min={1}
+            max={99}
+            value={displayOrder}
+            onChange={(e) => setDisplayOrder(e.target.value)}
+            placeholder="auto"
+            style={{ ...inputStyle, width: "120px" }}
           />
         </Field>
 

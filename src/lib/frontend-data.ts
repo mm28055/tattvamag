@@ -135,8 +135,44 @@ function buildBlocksAndInline(
     const tag = (("tagName" in (child as object) ? (child as { tagName?: string }).tagName : undefined) || (child as { name?: string }).name || "").toLowerCase();
 
     if (tag === "p") {
-      const html = $c.html() || "";
       const indent = parseInt($c.attr("data-indent") || "0", 10) || 0;
+      const className = ($c.attr("class") || "").toLowerCase();
+
+      // Caption paragraph (from Word's "Caption" style) → attach to the
+      // previous image block rather than rendering as a standalone paragraph.
+      if (/\bcaption\b/.test(className) && blocks.length > 0) {
+        const last = blocks[blocks.length - 1];
+        if (last.type === "image" && !last.caption) {
+          const capText = $c.text().replace(/\s+/g, " ").trim();
+          if (capText) {
+            last.caption = decodeEntities(capText);
+            return;
+          }
+        }
+      }
+
+      // Extract images embedded in <p> (Mammoth wraps DOCX images this way)
+      const $imgs = $c.find("img");
+      if ($imgs.length > 0) {
+        $imgs.each((_, imgEl) => {
+          const $imgEl = $(imgEl);
+          const src = $imgEl.attr("src") || "";
+          const alt = $imgEl.attr("alt") || "";
+          if (src) pushBlock({ type: "image", src, label: alt || "Image" });
+          $imgEl.remove();
+        });
+        const remainingHtml = ($c.html() || "").trim();
+        if (remainingHtml && remainingHtml.replace(/<[^>]+>/g, "").trim()) {
+          const inline = htmlToInline(remainingHtml);
+          const finalText = inline
+            .replace(/\|\|\|FN:([^:]+):([\s\S]*?)\|\|\|/g, (_m, num, note) => `<fn id="${num}" note="${note}" />`)
+            .trim();
+          if (finalText) pushBlock({ type: "p", text: finalText, ...(indent ? { indent } : {}) });
+        }
+        return;
+      }
+
+      const html = $c.html() || "";
 
       // WordPress often styles section headings as <p> with one of:
       //  (a) a <span style="font-size: 14pt"><strong>Title</strong></span>
@@ -284,10 +320,10 @@ function toFrontendArticle(a: Awaited<ReturnType<typeof getRawArticles>>[number]
     image: hasImage ? { src: featured.local || undefined, label: a.title } : null,
     heroStyle: hasImage ? "image" : "none",
     frontispiece: hasImage
-      ? { src: featured.local || undefined, label: a.illustrator || "", caption: a.illustrator ? `Illustrations by ${a.illustrator}` : undefined }
+      ? { src: featured.local || undefined, label: a.illustrator || "", caption: a.illustrator || undefined }
       : undefined,
     datePublished: formatDate(a.date),
-    illustrationCredit: a.illustrator ? `Illustrations by ${a.illustrator}` : undefined,
+    illustrationCredit: a.illustrator || undefined,
     fullBody,
     displayOrder: a.displayOrder ?? null,
   };

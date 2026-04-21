@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { sql, hasDb } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
-import { saveCoverImage } from "@/lib/r2";
+import { saveCoverImage, uploadMedia, hasR2 } from "@/lib/r2";
 import { markdownToArticleHtml } from "@/lib/markdown";
 import { annotateFootnotesForEditor, extractFootnotesFromEditorHtml } from "@/lib/editor-html";
 import { revalidatePublicContent } from "@/lib/revalidate";
@@ -29,9 +29,27 @@ async function docxToHtmlAndFootnotes(buf: Buffer): Promise<{
   html: string;
   footnotes: { num: string; text: string; html: string }[];
 }> {
+  const convertImage = mammoth.images.imgElement(async (element: { read: (enc: string) => Promise<string>; contentType?: string; altText?: string }) => {
+    const base64Data = await element.read("base64");
+    const contentType = element.contentType || "image/png";
+    if (hasR2) {
+      try {
+        const imgBuf = Buffer.from(base64Data, "base64");
+        const ext = contentType.split("/")[1] || "png";
+        const { url } = await uploadMedia({
+          buffer: imgBuf,
+          originalName: `docx-img.${ext}`,
+          contentType,
+        });
+        return { src: url, alt: element.altText || "" };
+      } catch { /* fall through to base64 */ }
+    }
+    return { src: `data:${contentType};base64,${base64Data}`, alt: element.altText || "" };
+  });
   const result = await mammoth.convertToHtml(
     { buffer: buf },
     {
+      convertImage,
       styleMap: [
         "p[style-name='Title'] => h1",
         "p[style-name='Heading 1'] => h2",
@@ -39,6 +57,9 @@ async function docxToHtmlAndFootnotes(buf: Buffer): Promise<{
         "p[style-name='Heading 3'] => h4",
         "p[style-name='Block Text'] => blockquote > p",
         "p[style-name='Quote'] => blockquote > p",
+        "p[style-name='Caption'] => p.caption:fresh",
+        "p[style-name='caption'] => p.caption:fresh",
+        "p[style-name='Image Caption'] => p.caption:fresh",
       ],
     },
   );

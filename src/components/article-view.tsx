@@ -529,6 +529,9 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
 
       <div style={{ maxWidth: `${measure}px`, margin: "0 auto", padding: "56px 40px 40px", position: "relative" }}>
         {blocks.map((block, i) => {
+          // Indent from the rich editor (Tab / indent button). Scales per level.
+          const indentLevel = "indent" in block && typeof block.indent === "number" ? block.indent : 0;
+          const indentStyle = indentLevel > 0 ? { paddingLeft: `${indentLevel * 32}px` } : undefined;
           if (block.type === "h2") {
             return (
               <h2
@@ -542,6 +545,7 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
                   marginBottom: "20px",
                   letterSpacing: "-0.004em",
                   fontStyle: "italic",
+                  ...indentStyle,
                 }}
               >
                 {block.text}
@@ -558,16 +562,17 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
             return <Pullquote key={i} text={block.text} accent={accent} />;
           }
           return (
-            <BodyParagraph
-              key={i}
-              text={block.text}
-              dropCap={i === firstParagraphIdx}
-              accent={accent}
-              onOpenFn={onOpenFn}
-              hoverFnId={hoverFn?.id || null}
-              activeFnId={activeFn?.id || null}
-              fontSize={bodyFontSize}
-            />
+            <div key={i} style={indentStyle}>
+              <BodyParagraph
+                text={block.text}
+                dropCap={i === firstParagraphIdx}
+                accent={accent}
+                onOpenFn={onOpenFn}
+                hoverFnId={hoverFn?.id || null}
+                activeFnId={activeFn?.id || null}
+                fontSize={bodyFontSize}
+              />
+            </div>
           );
         })}
       </div>

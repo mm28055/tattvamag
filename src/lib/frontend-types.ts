@@ -1,8 +1,8 @@
 // Types for the front-end component tree — matches the shape in the original data.js prototype.
 // Shared between the data adapter (server-side) and the view components (client-side).
 
-export type BlockP = { type: "p"; text: string };
-export type BlockH2 = { type: "h2"; text: string };
+export type BlockP = { type: "p"; text: string; indent?: number };
+export type BlockH2 = { type: "h2"; text: string; indent?: number };
 export type BlockPullquote = { type: "pullquote"; text: string };
 export type BlockImage = { type: "image"; src?: string; label?: string; caption?: string; aspectRatio?: string };
 export type BlockQuote = { type: "quote"; text: string };

@@ -136,6 +136,7 @@ function buildBlocksAndInline(
 
     if (tag === "p") {
       const html = $c.html() || "";
+      const indent = parseInt($c.attr("data-indent") || "0", 10) || 0;
 
       // WordPress often styles section headings as <p> with one of:
       //  (a) a <span style="font-size: 14pt"><strong>Title</strong></span>
@@ -146,7 +147,7 @@ function buildBlocksAndInline(
       const isBoldOnly = /^\s*(?:<(?:b|strong|em|i)[^>]*>\s*)+[^<]+(?:\s*<\/(?:b|strong|em|i)>\s*)+$/i.test(html);
       const looksLikeHeading = plainText.length > 0 && plainText.length < 80 && (hasFontSizeHeading || isBoldOnly);
       if (looksLikeHeading) {
-        pushBlock({ type: "h2", text: plainText });
+        pushBlock({ type: "h2", text: plainText, ...(indent ? { indent } : {}) });
         return;
       }
 
@@ -154,13 +155,14 @@ function buildBlocksAndInline(
       const finalText = inline
         .replace(/\|\|\|FN:([^:]+):([\s\S]*?)\|\|\|/g, (_m, num, note) => `<fn id="${num}" note="${note}" />`)
         .trim();
-      if (finalText) pushBlock({ type: "p", text: finalText });
+      if (finalText) pushBlock({ type: "p", text: finalText, ...(indent ? { indent } : {}) });
       return;
     }
 
     if (tag === "h1" || tag === "h2" || tag === "h3" || tag === "h4") {
       const text = $c.text().trim();
-      if (text) pushBlock({ type: "h2", text });
+      const indent = parseInt($c.attr("data-indent") || "0", 10) || 0;
+      if (text) pushBlock({ type: "h2", text, ...(indent ? { indent } : {}) });
       return;
     }
 

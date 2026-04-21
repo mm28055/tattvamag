@@ -7,12 +7,52 @@
 // - Preserves <sup class="footnote-ref" data-ref="N"> round-trip via a
 //   custom read-only node, so existing footnotes survive editing
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
-import { Node, mergeAttributes } from "@tiptap/core";
+import { Node, Extension, mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import ImageExt from "@tiptap/extension-image";
 import LinkExt from "@tiptap/extension-link";
 import { TextStyle, Color } from "@tiptap/extension-text-style";
 import { useEffect, useRef, useState } from "react";
+
+// Paragraph/heading indent stored as a data-indent attribute (and matching
+// padding-left for live preview). The reader pipeline reads data-indent off
+// the <p> and applies the same padding on the reader page.
+const INDENT_PX_PER_LEVEL = 32;
+const MAX_INDENT_LEVEL = 6;
+const IndentExtension = Extension.create({
+  name: "indent",
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["paragraph", "heading"],
+        attributes: {
+          indent: {
+            default: 0,
+            parseHTML: (el: HTMLElement) => parseInt(el.getAttribute("data-indent") || "0", 10) || 0,
+            renderHTML: (attrs: Record<string, unknown>) => {
+              const n = (attrs.indent as number) || 0;
+              if (!n) return {};
+              return { "data-indent": String(n), style: `padding-left: ${n * INDENT_PX_PER_LEVEL}px;` };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addKeyboardShortcuts() {
+    const adjust = (delta: number) => () => {
+      const ed = this.editor;
+      // Lists already use Tab to sink/lift items — don't steal that.
+      if (ed.isActive("listItem")) return false;
+      const nodeName = ed.isActive("heading") ? "heading" : "paragraph";
+      const cur = (ed.getAttributes(nodeName).indent as number) || 0;
+      const next = Math.max(0, Math.min(MAX_INDENT_LEVEL, cur + delta));
+      if (next === cur) return false;
+      return ed.chain().focus().updateAttributes(nodeName, { indent: next }).run();
+    };
+    return { Tab: adjust(1), "Shift-Tab": adjust(-1) };
+  },
+});
 
 // Custom node that renders a footnote-ref <sup> as an inline atom.
 // Stores both data-ref (number) and data-note (the note body) so editors can
@@ -77,6 +117,7 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
       TextStyle,
       Color,
       FootnoteRef,
+      IndentExtension,
     ],
     content: value,
     immediatelyRender: false,
@@ -300,6 +341,9 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
         </Btn>
       )}
       <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange} style={{ display: "none" }} />
+      <Sep />
+      <Btn onClick={() => { if (!editor.isActive("listItem")) { const n = (editor.isActive("heading") ? "heading" : "paragraph"); const cur = (editor.getAttributes(n).indent as number) || 0; editor.chain().focus().updateAttributes(n, { indent: Math.min(MAX_INDENT_LEVEL, cur + 1) }).run(); } }} title="Indent (Tab)">→|</Btn>
+      <Btn onClick={() => { if (!editor.isActive("listItem")) { const n = (editor.isActive("heading") ? "heading" : "paragraph"); const cur = (editor.getAttributes(n).indent as number) || 0; if (cur > 0) editor.chain().focus().updateAttributes(n, { indent: cur - 1 }).run(); } }} title="Outdent (Shift+Tab)">|←</Btn>
       <Sep />
       <Btn onClick={insertFootnote} title="Insert footnote">Fn+</Btn>
       {footnoteSelected && (

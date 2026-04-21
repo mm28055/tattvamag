@@ -30,12 +30,21 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "Tattva",
     locale: "en_US",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Tattva — On dharma, text, and inheritance",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Tattva — Celebrating Dharma",
     description:
       "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+    images: ["/og-image.jpg"],
   },
 };
 

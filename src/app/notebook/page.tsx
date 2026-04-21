@@ -13,11 +13,13 @@ export const metadata: Metadata = {
     url: "/notebook",
     type: "website",
     siteName: "Tattva",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Tattva" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Notebook | Tattva",
     description: "Fragments, marginalia, and works in progress from the Tattva notebook.",
+    images: ["/og-image.jpg"],
   },
 };
 

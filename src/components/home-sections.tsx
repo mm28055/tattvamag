@@ -80,7 +80,7 @@ export function FeaturedEssay({
                 fontFamily: "'Source Serif 4', Georgia, serif",
                 fontSize: "17px",
                 lineHeight: 1.8,
-                color: "#5a554e",
+                color: "#3a3530",
                 margin: 0,
               }}
             >
@@ -116,7 +116,7 @@ export function FeaturedEssay({
             fontFamily: "'Source Serif 4', Georgia, serif",
             fontSize: "17px",
             lineHeight: 1.8,
-            color: "#5a554e",
+            color: "#3a3530",
             margin: 0,
             textAlign: "left",
           }}
@@ -203,7 +203,7 @@ function SecondaryCard({
           </p>
         )}
         <Ornament accent={accent} margin="18px 0 0" />
-        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14.5px", lineHeight: 1.7, color: "#5a554e", marginTop: "14px" }}>
+        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14.5px", lineHeight: 1.7, color: "#3a3530", marginTop: "14px" }}>
           {truncate(essay.body, 260)}
         </p>
         <ByLine author={essay.author} readTime={essay.readTime} />
@@ -279,7 +279,7 @@ function ColumnACard({ article, accent, tagMuted, isFirst }: { article: Frontend
           </p>
         )}
         <Ornament accent={accent} margin="18px 0 0" />
-        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14.5px", lineHeight: 1.7, color: "#5a554e", marginTop: "12px" }}>
+        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14.5px", lineHeight: 1.7, color: "#3a3530", marginTop: "12px" }}>
           {truncate(article.body, 200)}
         </p>
         <ByLine author={article.author} readTime={article.readTime} />
@@ -341,7 +341,7 @@ function ColumnBCard({
           </p>
         )}
         <Ornament accent={accent} margin="20px 0 0" />
-        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.75, color: "#4a4540", marginTop: "14px", flex: showImage ? "initial" : 1 }}>
+        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.75, color: "#3a3530", marginTop: "14px", flex: showImage ? "initial" : 1 }}>
           {body}
         </p>
         <ByLine author={article.author} readTime={article.readTime} />

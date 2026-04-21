@@ -3,13 +3,81 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import "./globals.css";
 
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://tattvamag.org").replace(/\/$/, "");
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://tattvamag.org",
-  ),
+  metadataBase: new URL(SITE_URL),
   title: { default: "Tattva — Celebrating Dharma", template: "%s | Tattva" },
   description:
     "Tattva is the intellectual notebook of Manish Maheshwari — essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+  keywords: [
+    "Indian philosophy",
+    "dharma",
+    "Shaiva studies",
+    "Sanskrit",
+    "Hindu philosophy",
+    "Navya-Nyaya",
+    "Indian textual traditions",
+    "Tattva",
+  ],
+  authors: [{ name: "Manish Maheshwari" }],
+  creator: "Manish Maheshwari",
+  publisher: "Tattva Heritage Foundation",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Tattva",
+    title: "Tattva — Celebrating Dharma",
+    description:
+      "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tattva — Celebrating Dharma",
+    description:
+      "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
+
+// Organization + WebSite schemas help Google understand the publication itself
+// (independent of any single article). Emitted once in the root layout so every
+// page carries it.
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Tattva",
+  alternateName: "Tattva Heritage Foundation",
+  url: SITE_URL,
+  founder: { "@type": "Person", name: "Manish Maheshwari" },
+  sameAs: [
+    "https://www.tattvaheritage.org",
+    "https://www.shaivastudies.in",
+  ],
+};
+
+const siteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Tattva",
+  url: SITE_URL,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${SITE_URL}/archive?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -32,6 +100,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteSchema) }}
         />
       </head>
       <body>

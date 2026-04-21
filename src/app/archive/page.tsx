@@ -9,6 +9,19 @@ import ArchiveView from "@/components/archive-view";
 export const metadata: Metadata = {
   title: "Archive",
   description: "All essays and notebook entries published on Tattva.",
+  alternates: { canonical: "/archive" },
+  openGraph: {
+    title: "Archive | Tattva",
+    description: "All essays and notebook entries published on Tattva.",
+    url: "/archive",
+    type: "website",
+    siteName: "Tattva",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Archive | Tattva",
+    description: "All essays and notebook entries published on Tattva.",
+  },
 };
 
 export default async function ArchivePage() {

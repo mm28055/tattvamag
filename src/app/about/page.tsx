@@ -5,6 +5,19 @@ import { SITE } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "About",
   description: "About Tattva — the intellectual notebook of Manish Maheshwari.",
+  alternates: { canonical: "/about" },
+  openGraph: {
+    title: "About | Tattva",
+    description: "About Tattva — the intellectual notebook of Manish Maheshwari.",
+    url: "/about",
+    type: "website",
+    siteName: "Tattva",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About | Tattva",
+    description: "About Tattva — the intellectual notebook of Manish Maheshwari.",
+  },
 };
 
 export const revalidate = 300;

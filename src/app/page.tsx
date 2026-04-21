@@ -1,4 +1,5 @@
 // Homepage: featured + secondary grid + more reading + epigraph + notebook preview.
+import type { Metadata } from "next";
 import { getFrontendArticles } from "@/lib/frontend-data";
 import { getAllNotebookEntriesAsync } from "@/lib/notebook-data";
 import { SITE, EPIGRAPH } from "@/lib/site-config";
@@ -13,6 +14,30 @@ import { ShowMoreLink } from "@/components/common";
 import type { FrontendArticle } from "@/lib/frontend-types";
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  // Use the root-layout default title ("Tattva — Celebrating Dharma") rather
+  // than prefixing it; the homepage is the canonical landing page for the brand.
+  title: { absolute: "Tattva — Celebrating Dharma" },
+  description:
+    "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    title: "Tattva — Celebrating Dharma",
+    description:
+      "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+    url: "/",
+    siteName: "Tattva",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tattva — Celebrating Dharma",
+    description:
+      "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+  },
+};
 
 // Place articles into homepage slots 1..N. Pinned articles (displayOrder set)
 // go into their exact slot; remaining slots are filled from unpinned articles

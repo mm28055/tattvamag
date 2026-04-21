@@ -195,21 +195,13 @@ export default function AdminEditArticlePage() {
             <input type="text" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} style={inputStyle} />
           </Field>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-            <Field label="Category" required>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle}>
-                {CATEGORIES.map((c) => (
-                  <option key={c.slug} value={c.slug}>{c.name}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Type">
-              <select value={type} onChange={(e) => setType(e.target.value as "essay" | "note")} style={inputStyle}>
-                <option value="essay">Essay (long-form)</option>
-                <option value="note">Note (short notebook entry)</option>
-              </select>
-            </Field>
-          </div>
+          <Field label="Category" required>
+            <select value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle}>
+              {CATEGORIES.map((c) => (
+                <option key={c.slug} value={c.slug}>{c.name}</option>
+              ))}
+            </select>
+          </Field>
 
           <Field label="Tags" help="Comma-separated.">
             <input type="text" value={tags} onChange={(e) => setTags(e.target.value)} style={inputStyle} />

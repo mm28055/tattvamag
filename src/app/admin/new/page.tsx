@@ -175,24 +175,15 @@ export default function NewArticlePage() {
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Category" required>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle}>
-              {CATEGORIES.map((c) => (
-                <option key={c.slug} value={c.slug}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Type">
-            <select value={type} onChange={(e) => setType(e.target.value as "essay" | "note")} style={inputStyle}>
-              <option value="essay">Essay (long-form)</option>
-              <option value="note">Note (short notebook entry)</option>
-            </select>
-          </Field>
-        </div>
+        <Field label="Category" required>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle}>
+            {CATEGORIES.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </Field>
 
         <Field label="Tags" help="Comma-separated, e.g. “shaivism, epigraphy, bhakti”">
           <input

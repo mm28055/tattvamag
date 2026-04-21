@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { sql, hasDb } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
 import { invalidateNotebookCache } from "@/lib/notebook-data";
+import { revalidatePublicContent } from "@/lib/revalidate";
 
 export const runtime = "nodejs";
 
@@ -89,6 +90,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   `;
 
   invalidateNotebookCache();
+  revalidatePublicContent({ notebook: true });
   return NextResponse.json({ ok: true });
 }
 
@@ -102,5 +104,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   invalidateNotebookCache();
+  revalidatePublicContent({ notebook: true });
   return NextResponse.json({ ok: true });
 }

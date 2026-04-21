@@ -84,7 +84,13 @@ const FootnoteRef = Node.create({
   },
   renderHTML({ HTMLAttributes }) {
     const num = (HTMLAttributes["data-ref"] as string) || "";
-    return ["sup", mergeAttributes(HTMLAttributes, { class: "footnote-ref" }), num];
+    const note = (HTMLAttributes["data-note"] as string) || "";
+    // `title` gives editors a hover preview of the note text. The server
+    // strips data-note (and re-renders) before saving, so this never ships
+    // to readers.
+    const attrs: Record<string, string> = { class: "footnote-ref" };
+    if (note) attrs.title = note;
+    return ["sup", mergeAttributes(HTMLAttributes, attrs), num];
   },
 });
 
@@ -201,10 +207,17 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
           font-size: 11px;
           font-weight: 600;
           color: #B83A14;
-          padding: 0 2px;
-          cursor: default;
+          padding: 0 3px;
+          cursor: pointer;
           background: #f0e6d6;
           border-radius: 2px;
+        }
+        .tm-rich-editor .ProseMirror sup.footnote-ref:hover {
+          background: #e6d7b8;
+        }
+        .tm-rich-editor .ProseMirror sup.footnote-ref.ProseMirror-selectednode {
+          outline: 2px solid #B83A14;
+          outline-offset: 1px;
         }
         .tm-rich-editor .ProseMirror a { color: #B83A14; text-decoration: underline; }
         .tm-rich-editor .ProseMirror:focus { outline: none; }
@@ -345,9 +358,9 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
       <Btn onClick={() => { if (!editor.isActive("listItem")) { const n = (editor.isActive("heading") ? "heading" : "paragraph"); const cur = (editor.getAttributes(n).indent as number) || 0; editor.chain().focus().updateAttributes(n, { indent: Math.min(MAX_INDENT_LEVEL, cur + 1) }).run(); } }} title="Indent (Tab)">→|</Btn>
       <Btn onClick={() => { if (!editor.isActive("listItem")) { const n = (editor.isActive("heading") ? "heading" : "paragraph"); const cur = (editor.getAttributes(n).indent as number) || 0; if (cur > 0) editor.chain().focus().updateAttributes(n, { indent: cur - 1 }).run(); } }} title="Outdent (Shift+Tab)">|←</Btn>
       <Sep />
-      <Btn onClick={insertFootnote} title="Insert footnote">Fn+</Btn>
+      <Btn onClick={insertFootnote} title="Insert footnote at cursor">Fn+</Btn>
       {footnoteSelected && (
-        <Btn onClick={editFootnote} title="Edit footnote text">Edit fn…</Btn>
+        <Btn onClick={editFootnote} title="Edit or delete the selected footnote">Edit footnote…</Btn>
       )}
       <Sep />
       <div style={{ position: "relative" }}>

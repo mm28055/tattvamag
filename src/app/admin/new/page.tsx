@@ -144,9 +144,10 @@ export default function NewArticlePage() {
           </Field>
         ) : (
           <Field
+            as="div"
             label="Body"
             required
-            help="Bold, italic, headings, lists, quotes, links, inline colour, images (with editable alt text), and footnotes — all inline. Use the Fn+ button to add a footnote at the cursor."
+            help="Bold, italic, headings, lists, quotes, links, inline colour, images (with editable alt text), and footnotes — all inline. Use the Fn+ button to add a footnote at the cursor; click an existing footnote marker then hit “Edit footnote” to change or delete its text."
           >
             <RichEditor value={bodyHtml} onChange={setBodyHtml} onUploadImage={uploadImage} />
           </Field>
@@ -266,9 +267,14 @@ export default function NewArticlePage() {
   );
 }
 
-function Field({ label, children, required, help }: { label: string; children: React.ReactNode; required?: boolean; help?: string }) {
+function Field({ label, children, required, help, as }: { label: string; children: React.ReactNode; required?: boolean; help?: string; as?: "label" | "div" }) {
+  // `as="div"` is required when children contain a contenteditable (e.g. the
+  // TipTap RichEditor). A <label> wrapping contenteditable redirects clicks
+  // to the first labelable element inside (a toolbar button), which scrolls
+  // the caret position unexpectedly on every click.
+  const Tag = as || "label";
   return (
-    <label className="flex flex-col gap-1.5">
+    <Tag className="flex flex-col gap-1.5">
       <span
         style={{
           fontFamily: "var(--font-sans), sans-serif",
@@ -295,7 +301,7 @@ function Field({ label, children, required, help }: { label: string; children: R
           {help}
         </span>
       )}
-    </label>
+    </Tag>
   );
 }
 

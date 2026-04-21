@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { sql, hasDb } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
 import { invalidateNotebookCache } from "@/lib/notebook-data";
+import { revalidatePublicContent } from "@/lib/revalidate";
 
 export const runtime = "nodejs";
 
@@ -62,5 +63,6 @@ export async function POST(req: Request) {
   `;
 
   invalidateNotebookCache();
+  revalidatePublicContent({ notebook: true });
   return NextResponse.json({ ok: true, id });
 }

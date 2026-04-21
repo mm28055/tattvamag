@@ -7,6 +7,7 @@ import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage } from "@/lib/r2";
 import { markdownToArticleHtml } from "@/lib/markdown";
 import { annotateFootnotesForEditor, extractFootnotesFromEditorHtml } from "@/lib/editor-html";
+import { revalidatePublicContent } from "@/lib/revalidate";
 import mammoth from "mammoth";
 
 export const runtime = "nodejs";
@@ -275,6 +276,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
   `;
 
   invalidateContentCache();
+  revalidatePublicContent({ articleSlug: slug });
   return NextResponse.json({ ok: true, slug });
 }
 
@@ -292,5 +294,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ slug
   // so we clean up manually).
   await sql`DELETE FROM comments WHERE article_slug = ${slug}`;
   invalidateContentCache();
+  revalidatePublicContent({ articleSlug: slug });
   return NextResponse.json({ ok: true });
 }

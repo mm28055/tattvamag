@@ -12,6 +12,7 @@ import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage } from "@/lib/r2";
 import { markdownToArticleHtml } from "@/lib/markdown";
 import { extractFootnotesFromEditorHtml } from "@/lib/editor-html";
+import { revalidatePublicContent } from "@/lib/revalidate";
 import mammoth from "mammoth";
 
 export const runtime = "nodejs";
@@ -187,5 +188,6 @@ export async function POST(req: Request) {
   `;
 
   invalidateContentCache();
+  revalidatePublicContent({ articleSlug: slug });
   return NextResponse.json({ ok: true, slug, footnoteCount: footnotes.length });
 }

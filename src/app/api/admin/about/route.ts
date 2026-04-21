@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { getAbout, saveAbout } from "@/lib/about";
 import { hasDb } from "@/lib/db";
+import { revalidatePublicContent } from "@/lib/revalidate";
 
 export const runtime = "nodejs";
 
@@ -26,5 +27,6 @@ export async function PUT(req: Request) {
   const closing = String(body.closing || "").trim();
   if (!intro) return NextResponse.json({ error: "Intro is required" }, { status: 400 });
   await saveAbout({ intro, bio, closing });
+  revalidatePublicContent({ about: true });
   return NextResponse.json({ ok: true });
 }

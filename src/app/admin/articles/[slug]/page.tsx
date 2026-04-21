@@ -250,8 +250,9 @@ export default function AdminEditArticlePage() {
           </Field>
 
           <Field
+            as="div"
             label="Body"
-            help="Bold, italic, headings, lists, quotes, links, images with editable alt text, and inline colour. Existing footnote refs are preserved. Leave untouched to keep the current body; uploading a .docx above wins over edits here."
+            help="Bold, italic, headings, lists, quotes, links, images with editable alt text, and inline colour. Click a footnote marker (e.g. ¹) to select it, then hit “Edit footnote” in the toolbar to change or delete its text. Leave untouched to keep the current body; uploading a .docx above wins over edits here."
           >
             <RichEditor value={bodyHtml} onChange={setBodyHtml} onUploadImage={uploadImage} />
           </Field>
@@ -323,9 +324,14 @@ export default function AdminEditArticlePage() {
   );
 }
 
-function Field({ label, help, required, children }: { label: string; help?: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, help, required, children, as }: { label: string; help?: string; required?: boolean; children: React.ReactNode; as?: "label" | "div" }) {
+  // `as="div"` is required when children contain a contenteditable (e.g. the
+  // TipTap RichEditor). A <label> wrapping contenteditable redirects clicks
+  // to the first labelable element inside (a toolbar button), which scrolls
+  // the caret position unexpectedly on every click.
+  const Tag = as || "label";
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+    <Tag style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
       <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600, color: "#5a5048" }}>
         {label} {required && <span style={{ color: "#B83A14" }}>*</span>}
       </span>
@@ -335,7 +341,7 @@ function Field({ label, help, required, children }: { label: string; help?: stri
           {help}
         </span>
       )}
-    </label>
+    </Tag>
   );
 }
 

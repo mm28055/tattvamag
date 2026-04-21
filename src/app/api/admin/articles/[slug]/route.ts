@@ -6,6 +6,7 @@ import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage } from "@/lib/r2";
 import { markdownToArticleHtml } from "@/lib/markdown";
+import { annotateFootnotesForEditor, extractFootnotesFromEditorHtml } from "@/lib/editor-html";
 import mammoth from "mammoth";
 
 export const runtime = "nodejs";
@@ -106,6 +107,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     category_name: string;
     featured_image: string | null;
     body: string;
+    body_markdown: string | null;
     footnotes: Array<{ num: string; text: string; html: string }>;
     tags: Array<{ slug: string; name: string }>;
     display_order: number | null;
@@ -132,6 +134,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       tags: (r.tags || []).map((t) => t.name).join(", "),
       footnoteCount: (r.footnotes || []).length,
       displayOrder: r.display_order,
+      bodyHtml: annotateFootnotesForEditor(r.body, r.footnotes || []),
     },
   });
 }
@@ -153,6 +156,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
   const form = await req.formData();
   const file = form.get("file") as File | null;
   const markdownBody = String(form.get("markdownBody") || "").trim();
+  const htmlBody = String(form.get("htmlBody") || "").trim();
   const coverImage = form.get("coverImage") as File | null;
   const title = String(form.get("title") || "").trim();
   const subtitle = String(form.get("subtitle") || "").trim();
@@ -176,9 +180,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
     .filter(Boolean)
     .map((name) => ({ slug: slugify(name), name }));
 
-  // Optional: replace body via .docx or typed markdown. When neither is provided,
-  // the existing body stays put.
-  let bodyUpdate: { body: string; footnotes: string; meta: string; readTime: string } | null = null;
+  // Optional: replace body via .docx, typed markdown, or the rich editor's
+  // HTML output. When none is provided, the existing body stays put.
+  // The rich editor (htmlBody) writes HTML directly; it preserves the
+  // existing footnote refs it round-trips, so we don't touch the footnotes
+  // column here — it stays pointed at the existing JSONB entries.
+  type BodyUpdate = {
+    body: string;
+    meta: string;
+    readTime: string;
+    footnotes: string | null; // null = leave footnotes column alone
+    markdownSource: string | null;
+  };
+  let bodyUpdate: BodyUpdate | null = null;
   if (file && file.size > 0) {
     const buf = Buffer.from(await file.arrayBuffer());
     const { html, footnotes } = await docxToHtmlAndFootnotes(buf);
@@ -188,6 +202,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
       footnotes: JSON.stringify(footnotes),
       meta,
       readTime: estimateReadTime(html),
+      markdownSource: null,
     };
   } else if (markdownBody) {
     const parsed = await markdownToArticleHtml(markdownBody);
@@ -196,6 +211,21 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
       footnotes: JSON.stringify(parsed.footnotes),
       meta: parsed.metaDescription,
       readTime: parsed.readTime,
+      markdownSource: markdownBody,
+    };
+  } else if (htmlBody) {
+    // Extract footnote notes from the editor's data-note attrs, strip those
+    // attrs from the stored body, and rebuild the footnotes JSONB. The
+    // reader picks notes up from that column, so refs in the body need to
+    // stay in sync with the new footnotes list.
+    const extracted = extractFootnotesFromEditorHtml(htmlBody);
+    const plain = extracted.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    bodyUpdate = {
+      body: extracted.html,
+      footnotes: JSON.stringify(extracted.footnotes),
+      meta: plain.slice(0, 300),
+      readTime: estimateReadTime(extracted.html),
+      markdownSource: null,
     };
   }
 
@@ -218,6 +248,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
   const newReadTime = bodyUpdate?.readTime ?? null;
   const newFeatured = featuredImagePath ?? null; // null means "don't change" when bodyUpdate absent
   const changeFeatured = featuredImagePath !== undefined;
+  // body_markdown follows the body: when we replace body, we also replace
+  // the stored markdown source (set to NULL for .docx, to the typed value
+  // for markdown). When body stays put, leave body_markdown alone.
+  const changeBodyMarkdown = bodyUpdate !== null;
+  const newBodyMarkdown = bodyUpdate?.markdownSource ?? null;
 
   await sql`
     UPDATE articles SET
@@ -229,6 +264,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
       illustrator       = ${illustrator},
       tags              = ${JSON.stringify(tagList)}::jsonb,
       body              = COALESCE(${newBody}, body),
+      body_markdown     = CASE WHEN ${changeBodyMarkdown} THEN ${newBodyMarkdown} ELSE body_markdown END,
       footnotes         = COALESCE(${newFootnotes}::jsonb, footnotes),
       meta_description  = COALESCE(${newMeta}, meta_description),
       read_time         = COALESCE(${newReadTime}, read_time),

@@ -42,9 +42,14 @@ function collectFootnotes(fullBody: Block[]): FnToken[] {
   return out;
 }
 
-/** Render *italic* as <em> and preserved <sup>...</sup> tags inline. */
+/** Render inline formatting tokens emitted by htmlToInline():
+ *   *text*         → <em>
+ *   __text__       → <strong>
+ *   <clr c="…">…</clr>  → <span style="color:…"> (rich-editor inline colour)
+ *   <sup…>…</sup>  → <sup>  (preserved footnote refs and other superscripts)
+ */
 function renderInline(str: string): React.ReactNode[] {
-  const pattern = /(\*[^*]+\*|<sup\b[^>]*>[\s\S]*?<\/sup>)/g;
+  const pattern = /(\*[^*]+\*|__[^_]+__|<clr\s+c="([^"]+)">([\s\S]*?)<\/clr>|<sup\b[^>]*>[\s\S]*?<\/sup>)/g;
   const out: React.ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
@@ -56,6 +61,14 @@ function renderInline(str: string): React.ReactNode[] {
     const tok = m[0];
     if (tok.startsWith("*")) {
       out.push(<em key={`i${i++}`}>{tok.slice(1, -1)}</em>);
+    } else if (tok.startsWith("__")) {
+      out.push(<strong key={`b${i++}`}>{tok.slice(2, -2)}</strong>);
+    } else if (tok.startsWith("<clr")) {
+      out.push(
+        <span key={`c${i++}`} style={{ color: m[2] }}>
+          {renderInline(m[3])}
+        </span>,
+      );
     } else {
       const inner = tok.replace(/<\/?sup[^>]*>/gi, "");
       out.push(

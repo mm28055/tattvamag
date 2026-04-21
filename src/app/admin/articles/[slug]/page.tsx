@@ -2,10 +2,10 @@
 // Admin article edit — prefilled from /api/admin/articles/[slug] (GET).
 // Upload a replacement .docx or cover image, or tweak metadata in place.
 // Delete button wired to DELETE on the same endpoint.
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { InsertImageButton } from "@/components/admin/InsertImageButton";
+import RichEditor from "@/components/admin/RichEditor";
 
 const CATEGORIES = [
   { slug: "history", name: "History" },
@@ -26,6 +26,7 @@ type ArticleData = {
   readTime: string;
   footnoteCount: number;
   displayOrder: number | null;
+  bodyHtml: string;
 };
 
 export default function AdminEditArticlePage() {
@@ -44,14 +45,17 @@ export default function AdminEditArticlePage() {
   const [tags, setTags] = useState("");
   const [illustrator, setIllustrator] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [markdownBody, setMarkdownBody] = useState("");
+  const [bodyHtml, setBodyHtml] = useState("");
+  // Value loaded from the server — used to detect whether the editor changed
+  // the body. Unchanged at save time → don't re-submit, which keeps the
+  // canonical stored HTML intact.
+  const [initialBodyHtml, setInitialBodyHtml] = useState("");
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [displayOrder, setDisplayOrder] = useState<string>("");
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     fetch(`/api/admin/articles/${slug}`)
@@ -71,6 +75,8 @@ export default function AdminEditArticlePage() {
         setTags(a.tags || "");
         setIllustrator(a.illustrator || "");
         setDisplayOrder(a.displayOrder == null ? "" : String(a.displayOrder));
+        setBodyHtml(a.bodyHtml || "");
+        setInitialBodyHtml(a.bodyHtml || "");
       })
       .catch(() => setMessage({ kind: "error", text: "Failed to load article." }))
       .finally(() => setLoading(false));
@@ -89,7 +95,10 @@ export default function AdminEditArticlePage() {
     form.append("illustrator", illustrator);
     form.append("displayOrder", displayOrder);
     if (file) form.append("file", file);
-    if (!file && markdownBody.trim()) form.append("markdownBody", markdownBody);
+    // Only re-submit the body if the editor actually changed it.
+    if (!file && bodyHtml && bodyHtml !== initialBodyHtml) {
+      form.append("htmlBody", bodyHtml);
+    }
     if (coverImage) form.append("coverImage", coverImage);
 
     const res = await fetch(`/api/admin/articles/${slug}`, { method: "PUT", body: form });
@@ -100,10 +109,28 @@ export default function AdminEditArticlePage() {
       setCoverImage(null);
       // Clear file inputs
       document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((el) => (el.value = ""));
+      // Lock in the current editor contents as the new baseline so the
+      // next save only re-submits if the user edits again.
+      if (bodyHtml && bodyHtml !== initialBodyHtml) {
+        setInitialBodyHtml(bodyHtml);
+      }
     } else {
       const d = await res.json().catch(() => ({}));
       setMessage({ kind: "error", text: d.error || "Save failed." });
     }
+  }
+
+  async function uploadImage(imgFile: File): Promise<string | null> {
+    const form = new FormData();
+    form.append("file", imgFile);
+    const res = await fetch("/api/admin/media", { method: "POST", body: form });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setMessage({ kind: "error", text: d.error || "Image upload failed." });
+      return null;
+    }
+    const data = await res.json();
+    return typeof data.url === "string" ? data.url : null;
   }
 
   async function remove() {
@@ -212,7 +239,7 @@ export default function AdminEditArticlePage() {
 
           <Field
             label="Replace body (.docx)"
-            help={`Optional. Leave blank to keep the current body (${data?.footnoteCount ?? 0} footnote${data?.footnoteCount === 1 ? "" : "s"}, ${data?.readTime || "—"}). Or paste markdown in the next field.`}
+            help={`Optional. Uploading a .docx replaces the body below (${data?.footnoteCount ?? 0} footnote${data?.footnoteCount === 1 ? "" : "s"}, ${data?.readTime || "—"}).`}
           >
             <input
               type="file"
@@ -223,18 +250,10 @@ export default function AdminEditArticlePage() {
           </Field>
 
           <Field
-            label="Replace body (markdown)"
-            help="Optional. Fill this in to rewrite the body. Footnotes: [^1] in the text + [^1]: your note at the bottom. If both a .docx and markdown are provided, the .docx wins."
+            label="Body"
+            help="Bold, italic, headings, lists, quotes, links, images with editable alt text, and inline colour. Existing footnote refs are preserved. Leave untouched to keep the current body; uploading a .docx above wins over edits here."
           >
-            <textarea
-              ref={bodyRef}
-              value={markdownBody}
-              onChange={(e) => setMarkdownBody(e.target.value)}
-              rows={10}
-              placeholder={`# New opening\n\nRewrite in markdown with a footnote[^1].\n\n[^1]: The footnote text.`}
-              style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14px", lineHeight: 1.6, resize: "vertical" }}
-            />
-            <InsertImageButton getTextarea={() => bodyRef.current} onChange={setMarkdownBody} />
+            <RichEditor value={bodyHtml} onChange={setBodyHtml} onUploadImage={uploadImage} />
           </Field>
 
           <Field

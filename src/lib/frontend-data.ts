@@ -47,11 +47,29 @@ function decodeEntities(s: string): string {
 }
 
 /** Convert inline HTML to the plain-ish text the prototype's renderer expects:
- *  keeps <fn id="N" note="..." /> tokens, converts <em>/<i> to *...*, strips everything else. */
+ *  keeps <fn id="N" note="..." /> tokens, converts <em>/<i> to *...* markers,
+ *  preserves <strong>/<b> as __...__ markers, and preserves inline text colour
+ *  as a <clr c="HEX">...</clr> token. renderInline() in article-view.tsx
+ *  matches both tokens. */
 function htmlToInline(html: string): string {
   if (!html) return "";
   const $ = cheerio.load(`<div>${html}</div>`, { xml: false });
   const root = $("div").first();
+
+  // Preserve inline text colour from the rich editor. Drop other span
+  // attributes but keep the colour. Match `color: red`, `color: #ff0000`, etc.
+  root.find("span").each((_, el) => {
+    const $el = $(el);
+    const style = $el.attr("style") || "";
+    const m = style.match(/color\s*:\s*([^;]+)/i);
+    const inner = $el.html() || "";
+    if (m && m[1]) {
+      const color = m[1].trim().replace(/"/g, "");
+      $el.replaceWith(`<clr c="${color}">${inner}</clr>`);
+    } else {
+      $el.replaceWith($el.contents());
+    }
+  });
 
   // Convert <em>/<i> to *text* markers
   root.find("em, i").each((_, el) => {
@@ -59,9 +77,10 @@ function htmlToInline(html: string): string {
     $el.replaceWith(`*${$el.text()}*`);
   });
 
-  // Drop <strong>/<b> (keep their text)
+  // Preserve <strong>/<b> as __text__ markers (reader renders these as bold).
   root.find("strong, b").each((_, el) => {
-    $(el).replaceWith($(el).text());
+    const $el = $(el);
+    $el.replaceWith(`__${$el.text()}__`);
   });
 
   // Drop <br> as space
@@ -69,10 +88,10 @@ function htmlToInline(html: string): string {
     $(el).replaceWith(" ");
   });
 
-  // Unwrap all other inline tags, keeping children as-is
-  root.find("a, span").each((_, el) => {
+  // Unwrap <a> (keep text, drop the href — links mid-paragraph still read
+  // cleanly; we can expose a full link mark later if the editor grows one).
+  root.find("a").each((_, el) => {
     const $el = $(el);
-    // Preserve text but drop attributes
     $el.replaceWith($el.contents());
   });
 

@@ -11,6 +11,7 @@ import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage } from "@/lib/r2";
 import { markdownToArticleHtml } from "@/lib/markdown";
+import { extractFootnotesFromEditorHtml } from "@/lib/editor-html";
 import mammoth from "mammoth";
 
 export const runtime = "nodejs";
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file") as File | null;
   const markdownBody = String(form.get("markdownBody") || "").trim();
+  const htmlBody = String(form.get("htmlBody") || "").trim();
   const coverImage = form.get("coverImage") as File | null;
   const title = String(form.get("title") || "").trim();
   const subtitle = String(form.get("subtitle") || "").trim();
@@ -58,9 +60,9 @@ export async function POST(req: Request) {
   const illustrator = String(form.get("illustrator") || "").trim();
   const customSlug = String(form.get("slug") || "").trim();
 
-  // Require either a .docx upload OR typed markdown body (new: inline composer).
-  if (!file && !markdownBody) {
-    return NextResponse.json({ error: "Upload a .docx or type a body in markdown." }, { status: 400 });
+  // Require one of: .docx upload, typed markdown body, or rich-editor HTML.
+  if (!file && !markdownBody && !htmlBody) {
+    return NextResponse.json({ error: "Upload a .docx, type a body in markdown, or write one in the editor." }, { status: 400 });
   }
   if (!title) return NextResponse.json({ error: "title is required" }, { status: 400 });
   if (!categorySlug || !CATEGORIES[categorySlug]) {
@@ -110,12 +112,18 @@ export async function POST(req: Request) {
       /<sup><a[^>]*id="footnote-ref-(\d+)"[^>]*>\[\d+\]<\/a><\/sup>/g,
       (_m, num) => `<sup class="footnote-ref" data-ref="${num}">${num}</sup>`,
     );
-  } else {
+  } else if (markdownBody) {
     // ── Convert typed markdown to HTML. Handles pandoc-style footnotes
     // ([^n] references + [^n]: definitions) the same way the .docx path does.
     const parsed = await markdownToArticleHtml(markdownBody);
     html = parsed.html;
     footnotes.push(...parsed.footnotes);
+  } else {
+    // ── Rich-editor HTML path. Extract footnote notes from data-note attrs,
+    // renumber sequentially, and strip data-note from the stored body.
+    const extracted = extractFootnotesFromEditorHtml(htmlBody);
+    html = extracted.html;
+    footnotes.push(...extracted.footnotes);
   }
 
   // ── Slug
@@ -149,12 +157,15 @@ export async function POST(req: Request) {
 
   const metaDescription = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
 
-  // ── Insert into DB
+  // ── Insert into DB. Store markdown source when the body was typed as
+  // markdown so the edit form can round-trip it. .docx uploads leave
+  // body_markdown NULL (GET will synthesize from HTML for the edit UI).
+  const bodyMarkdownSource: string | null = file ? null : markdownBody;
   await sql`
     INSERT INTO articles (
       slug, type, title, subtitle, meta_description, date, author,
       read_time, illustrator, category_slug, category_name,
-      featured_image, body, footnotes, tags
+      featured_image, body, body_markdown, footnotes, tags
     ) VALUES (
       ${slug},
       ${type},
@@ -169,6 +180,7 @@ export async function POST(req: Request) {
       ${CATEGORIES[categorySlug]},
       ${featuredImagePath},
       ${html},
+      ${bodyMarkdownSource},
       ${JSON.stringify(footnotes)}::jsonb,
       ${JSON.stringify(tagList)}::jsonb
     )

@@ -1,8 +1,8 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { InsertImageButton } from "@/components/admin/InsertImageButton";
+import RichEditor from "@/components/admin/RichEditor";
 
 const CATEGORIES = [
   { slug: "history", name: "History" },
@@ -13,9 +13,9 @@ const CATEGORIES = [
 
 export default function NewArticlePage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"docx" | "inline">("docx");
+  const [mode, setMode] = useState<"docx" | "inline">("inline");
   const [file, setFile] = useState<File | null>(null);
-  const [markdownBody, setMarkdownBody] = useState("");
+  const [bodyHtml, setBodyHtml] = useState("");
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -26,7 +26,19 @@ export default function NewArticlePage() {
   const [slug, setSlug] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  async function uploadImage(imgFile: File): Promise<string | null> {
+    const form = new FormData();
+    form.append("file", imgFile);
+    const res = await fetch("/api/admin/media", { method: "POST", body: form });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error || "Image upload failed.");
+      return null;
+    }
+    const data = await res.json();
+    return typeof data.url === "string" ? data.url : null;
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,7 +47,7 @@ export default function NewArticlePage() {
       setError("Please choose a .docx file (or switch to Write inline).");
       return;
     }
-    if (mode === "inline" && !markdownBody.trim()) {
+    if (mode === "inline" && !bodyHtml.replace(/<[^>]+>/g, "").trim()) {
       setError("Type an article body (or switch to Upload .docx).");
       return;
     }
@@ -46,7 +58,7 @@ export default function NewArticlePage() {
     setSubmitting(true);
     const form = new FormData();
     if (mode === "docx" && file) form.append("file", file);
-    if (mode === "inline") form.append("markdownBody", markdownBody);
+    if (mode === "inline") form.append("htmlBody", bodyHtml);
     if (coverImage) form.append("coverImage", coverImage);
     form.append("title", title);
     form.append("subtitle", subtitle);
@@ -105,19 +117,19 @@ export default function NewArticlePage() {
           lineHeight: 1.7,
         }}
       >
-        Two ways to publish: upload a Word <code>.docx</code> (footnotes preserved, bibliography intact),
-        or type the body directly in markdown. Pick whichever is quicker for the piece. A cover image is
-        optional either way.
+        Two ways to publish: write the piece in the rich editor (bold, italic, headings, lists, images,
+        inline colour, footnotes — all with live preview), or upload a Word <code>.docx</code> if you
+        already have one drafted. A cover image is optional either way.
       </p>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-5">
-        {/* Mode toggle: upload a Word doc OR type the body directly. */}
+        {/* Mode toggle: write in the rich editor OR upload a Word doc. */}
         <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--color-divider-soft)", paddingBottom: "2px" }}>
-          <button type="button" onClick={() => setMode("docx")} style={tabStyle(mode === "docx")}>
-            Upload .docx
-          </button>
           <button type="button" onClick={() => setMode("inline")} style={tabStyle(mode === "inline")}>
             Write inline
+          </button>
+          <button type="button" onClick={() => setMode("docx")} style={tabStyle(mode === "docx")}>
+            Upload .docx
           </button>
         </div>
 
@@ -132,19 +144,11 @@ export default function NewArticlePage() {
           </Field>
         ) : (
           <Field
-            label="Body (markdown)"
+            label="Body"
             required
-            help={`Paragraphs: separate with a blank line. Formatting: # Heading, ## Subheading, **bold**, *italic*, [link](https://…), > quote. Footnotes: [^1] in the text and [^1]: your note at the bottom.`}
+            help="Bold, italic, headings, lists, quotes, links, inline colour, images (with editable alt text), and footnotes — all inline. Use the Fn+ button to add a footnote at the cursor."
           >
-            <textarea
-              ref={bodyRef}
-              value={markdownBody}
-              onChange={(e) => setMarkdownBody(e.target.value)}
-              rows={20}
-              placeholder={`# Opening heading\n\nYour first paragraph with a footnote[^1].\n\n## A subheading\n\nMore body text, with **bold** or *italic* when you need it.\n\n[^1]: This is the footnote. It can contain *emphasis* or [links](https://example.org).`}
-              style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }}
-            />
-            <InsertImageButton getTextarea={() => bodyRef.current} onChange={setMarkdownBody} />
+            <RichEditor value={bodyHtml} onChange={setBodyHtml} onUploadImage={uploadImage} />
           </Field>
         )}
 

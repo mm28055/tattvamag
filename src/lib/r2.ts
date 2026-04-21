@@ -5,6 +5,7 @@
 import "server-only";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { promises as fs } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 
 function env(name: string): string | undefined {
@@ -55,7 +56,11 @@ export async function saveCoverImage(opts: {
   const { buffer, slug, originalName, contentType } = opts;
   const ext = (originalName.split(".").pop() || "jpg").toLowerCase();
   const safeExt = /^(jpg|jpeg|png|webp)$/i.test(ext) ? ext : "jpg";
-  const filename = `${slug}.${safeExt}`;
+  // Content-hash suffix so replacing the cover gets a fresh URL. Without
+  // this, the key stays `{slug}.{ext}` and Cloudflare's 1-year immutable
+  // cache keeps serving the old image even after R2 is overwritten.
+  const hash = createHash("sha1").update(buffer).digest("hex").slice(0, 8);
+  const filename = `${slug}-${hash}.${safeExt}`;
 
   if (hasR2) {
     const key = `featured/${filename}`;

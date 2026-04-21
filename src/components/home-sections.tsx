@@ -416,13 +416,40 @@ export function NotebookSection({
   );
 }
 
+// Strip HTML tags (incl. <figure>/<img>/<figcaption>) and collapse whitespace
+// so rich-editor HTML bodies don't leak raw markup into the homepage preview.
+function stripHtml(s: string): string {
+  return s
+    .replace(/<figure[\s\S]*?<\/figure>/gi, " ")
+    .replace(/<img[^>]*>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Cap the preview at ~300 chars (roughly 4–5 lines in the card) without
+// breaking a word, and append an ellipsis when we truncate.
+function previewText(s: string, max = 300): string {
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  return cut.slice(0, lastSpace > 0 ? lastSpace : max).trimEnd() + "…";
+}
+
 function NotebookPreviewCard({ entry, accent, tagMuted, i, total }: { entry: FrontendNotebookEntry; accent: string; tagMuted: string; i: number; total: number }) {
   const [hover, setHover] = useState(false);
   const isRight = i % 2 === 1;
-  const firstPara =
+  const raw =
     typeof entry.body === "string"
-      ? entry.body.split(/\n\n+/)[0]
+      ? entry.body
       : (entry.body.find((b) => b.type === "p") as { text: string } | undefined)?.text || "";
+  const firstPara = previewText(stripHtml(raw));
   return (
     <article
       onMouseEnter={() => setHover(true)}

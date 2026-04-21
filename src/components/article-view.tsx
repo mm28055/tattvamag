@@ -194,7 +194,12 @@ function ClassicalHeader({ article, accent, tagMuted }: { article: FrontendArtic
       )}
       <div style={{ width: "44px", height: "1.5px", background: accent, margin: "36px auto" }} />
       <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "12px", letterSpacing: "0.1em", color: "#6b6259" }}>
-        <span style={{ fontWeight: 600, color: "#3a3530" }}>{article.author}</span>
+        <Link
+          href={`/archive?tab=essays&author=${encodeURIComponent(article.author)}` as Route}
+          style={{ fontWeight: 600, color: "#3a3530", textDecoration: "none" }}
+        >
+          {article.author}
+        </Link>
         <span style={{ margin: "0 10px", color: "#b0a89e" }}>·</span>
         <span>{article.readTime}</span>
       </div>
@@ -780,7 +785,12 @@ function NextArticlePreview({ article, tagMuted }: { article: FrontendArticle; t
         </p>
       )}
       <div style={{ marginTop: "18px", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", color: "#9e958a" }}>
-        <span>{article.author}</span>
+        <Link
+          href={`/archive?tab=essays&author=${encodeURIComponent(article.author)}` as Route}
+          style={{ color: "inherit", textDecoration: "none" }}
+        >
+          {article.author}
+        </Link>
         <span style={{ margin: "0 8px", color: "#d4cdc2" }}>·</span>
         <span>{article.readTime}</span>
       </div>

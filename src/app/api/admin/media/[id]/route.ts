@@ -6,6 +6,31 @@ import { deleteMedia } from "@/lib/r2";
 
 export const runtime = "nodejs";
 
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!hasDb) {
+    return NextResponse.json({ error: "DATABASE_URL not configured." }, { status: 503 });
+  }
+  const { id } = await params;
+  const idNum = parseInt(id, 10);
+  if (!idNum) return NextResponse.json({ error: "Bad id" }, { status: 400 });
+
+  const body = await req.json();
+  const altText = typeof body.altText === "string" ? body.altText.trim() : undefined;
+  const caption = typeof body.caption === "string" ? body.caption.trim() : undefined;
+
+  if (altText !== undefined) {
+    await sql`UPDATE media SET alt_text = ${altText} WHERE id = ${idNum}`;
+  }
+  if (caption !== undefined) {
+    await sql`UPDATE media SET caption = ${caption} WHERE id = ${idNum}`;
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

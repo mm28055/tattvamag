@@ -27,6 +27,7 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file") as File | null;
   const altText = String(form.get("altText") || "").trim();
+  const caption = String(form.get("caption") || "").trim();
 
   if (!file || file.size === 0) {
     return NextResponse.json({ error: "Pick an image to upload." }, { status: 400 });
@@ -43,8 +44,8 @@ export async function POST(req: Request) {
   });
 
   const rows = (await sql`
-    INSERT INTO media (r2_key, filename, content_type, size_bytes, alt_text)
-    VALUES (${key}, ${file.name}, ${file.type}, ${file.size}, ${altText})
+    INSERT INTO media (r2_key, filename, content_type, size_bytes, alt_text, caption)
+    VALUES (${key}, ${file.name}, ${file.type}, ${file.size}, ${altText}, ${caption})
     RETURNING id
   `) as { id: number }[];
 
@@ -56,7 +57,7 @@ export async function GET() {
   if (fail) return fail;
 
   const rows = (await sql`
-    SELECT id, r2_key, filename, content_type, size_bytes, alt_text, uploaded_at
+    SELECT id, r2_key, filename, content_type, size_bytes, alt_text, caption, uploaded_at
     FROM media
     ORDER BY uploaded_at DESC
   `) as Array<{
@@ -66,6 +67,7 @@ export async function GET() {
     content_type: string;
     size_bytes: number;
     alt_text: string | null;
+    caption: string | null;
     uploaded_at: string;
   }>;
 
@@ -78,6 +80,7 @@ export async function GET() {
       contentType: r.content_type,
       sizeBytes: r.size_bytes,
       altText: r.alt_text || "",
+      caption: r.caption || "",
       uploadedAt: r.uploaded_at,
     })),
   });

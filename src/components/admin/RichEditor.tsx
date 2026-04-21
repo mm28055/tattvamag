@@ -94,6 +94,101 @@ const FootnoteRef = Node.create({
   },
 });
 
+const CaptionedImage = ImageExt.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      caption: { default: null },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "figure",
+        getAttrs: (node: string | HTMLElement) => {
+          if (typeof node === "string") return false;
+          const img = node.querySelector("img");
+          if (!img) return false;
+          const figcaption = node.querySelector("figcaption");
+          return {
+            src: img.getAttribute("src"),
+            alt: img.getAttribute("alt"),
+            title: img.getAttribute("title"),
+            caption: figcaption?.textContent?.trim() || null,
+          };
+        },
+      },
+      {
+        tag: "img[src]",
+        getAttrs: (node: string | HTMLElement) => {
+          if (typeof node === "string") return false;
+          return {
+            src: node.getAttribute("src"),
+            alt: node.getAttribute("alt"),
+            title: node.getAttribute("title"),
+          };
+        },
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    const { caption, ...imgAttrs } = HTMLAttributes;
+    if (caption) {
+      return [
+        "figure",
+        { class: "tm-editor-figure" },
+        ["img", imgAttrs],
+        ["figcaption", {}, caption],
+      ];
+    }
+    return ["img", imgAttrs];
+  },
+
+  addNodeView() {
+    return ({ node }: { node: { type: { name: string }; attrs: Record<string, unknown> } }) => {
+      const figure = document.createElement("figure");
+      figure.className = "tm-editor-figure";
+
+      const img = document.createElement("img");
+      img.src = (node.attrs.src as string) || "";
+      img.alt = (node.attrs.alt as string) || "";
+      img.className = "tm-editor-img";
+      figure.appendChild(img);
+
+      const cap = document.createElement("figcaption");
+      cap.className = "tm-editor-figcaption";
+      if (node.attrs.caption) {
+        cap.textContent = node.attrs.caption as string;
+        figure.appendChild(cap);
+      }
+
+      return {
+        dom: figure,
+        update(updatedNode: { type: { name: string }; attrs: Record<string, unknown> }) {
+          if (updatedNode.type.name !== "image") return false;
+          img.src = (updatedNode.attrs.src as string) || "";
+          img.alt = (updatedNode.attrs.alt as string) || "";
+          if (updatedNode.attrs.caption) {
+            cap.textContent = updatedNode.attrs.caption as string;
+            if (!cap.parentNode) figure.appendChild(cap);
+          } else if (cap.parentNode) {
+            cap.remove();
+          }
+          return true;
+        },
+        selectNode() {
+          figure.classList.add("ProseMirror-selectednode");
+        },
+        deselectNode() {
+          figure.classList.remove("ProseMirror-selectednode");
+        },
+      };
+    };
+  },
+});
+
 const COLOR_SWATCHES = [
   { name: "default", value: null },
   { name: "red", value: "#B83A14" },
@@ -118,7 +213,7 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
         // history, hardBreak, code, codeBlock.
         heading: { levels: [2, 3] },
       }),
-      ImageExt.configure({ inline: false, allowBase64: false, HTMLAttributes: { class: "tm-editor-img" } }),
+      CaptionedImage.configure({ inline: false, allowBase64: false, HTMLAttributes: { class: "tm-editor-img" } }),
       LinkExt.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: "noopener" } }),
       TextStyle,
       Color,
@@ -202,6 +297,31 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
           cursor: pointer;
         }
         .tm-rich-editor .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #B83A14; }
+        .tm-rich-editor .ProseMirror figure.tm-editor-figure {
+          margin: 16px 0;
+          text-align: center;
+        }
+        .tm-rich-editor .ProseMirror figure.tm-editor-figure img {
+          max-width: 100%;
+          height: auto;
+          display: block;
+          margin: 0 auto;
+          border: 1px solid #e2ddd5;
+          cursor: pointer;
+        }
+        .tm-rich-editor .ProseMirror figure.tm-editor-figure.ProseMirror-selectednode {
+          outline: 2px solid #B83A14;
+          outline-offset: 2px;
+          border-radius: 2px;
+        }
+        .tm-rich-editor .ProseMirror figure.tm-editor-figure figcaption {
+          margin-top: 8px;
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 14px;
+          color: #6b6259;
+          line-height: 1.5;
+        }
         .tm-rich-editor .ProseMirror sup.footnote-ref {
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
@@ -262,6 +382,14 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
     editor.chain().focus().updateAttributes("image", { alt }).run();
   };
 
+  const editCaption = () => {
+    const attrs = editor.getAttributes("image");
+    const currentCaption = (attrs.caption as string) || "";
+    const caption = window.prompt("Image caption (shown below the image)", currentCaption);
+    if (caption === null) return;
+    editor.chain().focus().updateAttributes("image", { caption: caption.trim() || null }).run();
+  };
+
   const insertImage = () => fileInputRef.current?.click();
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -270,7 +398,8 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
     const src = await onUploadImage(file);
     if (!src) return;
     const alt = window.prompt("Alt text for this image (optional)", "") || "";
-    editor.chain().focus().setImage({ src, alt }).run();
+    const caption = window.prompt("Caption for this image (optional, shown below the image)", "") || "";
+    editor.chain().focus().insertContent({ type: "image", attrs: { src, alt, caption: caption || null } }).run();
   };
 
   const setColor = (color: string | null) => {
@@ -351,6 +480,11 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
       {imageSelected && (
         <Btn onClick={editImage} title="Edit image alt text">
           Alt…
+        </Btn>
+      )}
+      {imageSelected && (
+        <Btn onClick={editCaption} title="Edit image caption">
+          Caption…
         </Btn>
       )}
       <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange} style={{ display: "none" }} />

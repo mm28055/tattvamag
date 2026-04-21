@@ -10,6 +10,7 @@ type MediaItem = {
   contentType: string;
   sizeBytes: number;
   altText: string;
+  caption: string;
   uploadedAt: string;
 };
 
@@ -59,6 +60,26 @@ export default function AdminMediaPage() {
     } catch {
       setError("Clipboard copy failed — select the URL manually.");
     }
+  }
+
+  async function editMeta(item: MediaItem) {
+    const altText = window.prompt("Alt text", item.altText || "");
+    if (altText === null) return;
+    const caption = window.prompt("Caption (shown below the image)", item.caption || "");
+    if (caption === null) return;
+    const res = await fetch(`/api/admin/media/${item.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ altText: altText.trim(), caption: caption.trim() }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error || "Update failed.");
+      return;
+    }
+    setItems((cur) =>
+      cur.map((x) => (x.id === item.id ? { ...x, altText: altText.trim(), caption: caption.trim() } : x)),
+    );
   }
 
   async function remove(item: MediaItem) {
@@ -161,6 +182,23 @@ export default function AdminMediaPage() {
                 <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", color: "#8b7f72" }}>
                   {formatSize(item.sizeBytes)}
                 </div>
+                {item.caption && (
+                  <div
+                    style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontStyle: "italic",
+                      fontSize: "12px",
+                      color: "#6b6259",
+                      lineHeight: 1.4,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    title={item.caption}
+                  >
+                    {item.caption}
+                  </div>
+                )}
                 <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
                   <button
                     type="button"
@@ -168,6 +206,13 @@ export default function AdminMediaPage() {
                     style={smallBtnStyle(false)}
                   >
                     {copiedId === item.id ? "Copied ✓" : "Copy URL"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editMeta(item)}
+                    style={smallBtnStyle(false)}
+                  >
+                    Edit
                   </button>
                   <button
                     type="button"

@@ -284,12 +284,10 @@ function Pullquote({ text, accent }: { text: string; accent: string }) {
   );
 }
 
-// ══════ Body paragraph with optional drop cap + margin footnote ══════
-// Margin notes are vertically aligned with their in-text [N] marker.
-// When two notes would overlap (same line, adjacent lines), the second
-// cascades downward with a small gap so they never collide.
-const NOTE_CASCADE_GAP = 10; // px between stacked margin notes
-
+// ══════ Body paragraph with optional drop cap ══════
+// Just the paragraph + its in-text [N] markers. Margin notes are rendered
+// once, globally, by MarginNotesColumn (sibling in the content container)
+// so paragraph flow is untouched by long notes.
 function BodyParagraph({
   text,
   dropCap,
@@ -307,14 +305,6 @@ function BodyParagraph({
   activeFnId: string | null;
   fontSize: number;
 }) {
-  const cited: FnToken[] = [];
-  const re = /<fn\s+id="([^"]+)"\s+note="((?:[^"\\]|\\.)*)"\s*\/>/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) {
-    cited.push({ id: m[1], note: m[2].replace(/\\"/g, '"') });
-  }
-  const uniqueCited = cited.filter((fn, i, arr) => arr.findIndex((x) => x.id === fn.id) === i);
-
   let firstChar: string | null = null;
   let body = text;
   if (dropCap) {
@@ -327,15 +317,53 @@ function BodyParagraph({
 
   const nodes = renderParagraphNodes(body, accent, onOpenFn, hoverFnId || activeFnId);
 
-  // ── Marker-aligned positioning for margin notes ──
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const noteElsRef = useRef<Map<string, HTMLElement>>(new Map());
-  const [notePositions, setNotePositions] = useState<Record<string, number> | null>(null);
+  return (
+    <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: `${fontSize}px`, lineHeight: 1.75, color: "#2a2520", margin: "0 0 26px", textAlign: "left" }}>
+      {firstChar && (
+        <span
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: "84px",
+            lineHeight: 0.82,
+            fontWeight: 500,
+            color: accent,
+            float: "left",
+            marginRight: "14px",
+            marginTop: "8px",
+            marginBottom: "-6px",
+          }}
+        >
+          {firstChar}
+        </span>
+      )}
+      {nodes}
+    </p>
+  );
+}
 
-  // minHeight ensures the wrapper is tall enough to contain its absolutely-
-  // positioned margin notes — without it, a short paragraph with a long note
-  // lets the note overflow onto the next paragraph.
-  const [minHeight, setMinHeight] = useState<number | undefined>(undefined);
+// ══════ Global margin-notes column ══════
+// One continuous column to the right of the article body. Each note is
+// placed at the y-coord of its [N] marker (measured in the browser after
+// layout). When two notes would overlap, the second cascades down with a
+// small gap. Paragraph flow is never affected by note height — the column
+// simply extends downward independently.
+const NOTE_CASCADE_GAP = 10;
+
+function MarginNotesColumn({
+  containerRef,
+  footnotes,
+  accent,
+  hoverFnId,
+  activeFnId,
+}: {
+  containerRef: React.RefObject<HTMLElement | null>;
+  footnotes: FnToken[];
+  accent: string;
+  hoverFnId: string | null;
+  activeFnId: string | null;
+}) {
+  const noteElsRef = useRef<Map<string, HTMLElement>>(new Map());
+  const [positions, setPositions] = useState<Record<string, number> | null>(null);
 
   const noteRef = useCallback((id: string) => (el: HTMLElement | null) => {
     if (el) noteElsRef.current.set(id, el);
@@ -343,29 +371,23 @@ function BodyParagraph({
   }, []);
 
   useEffect(() => {
-    if (!wrapRef.current || uniqueCited.length === 0) return;
+    const container = containerRef.current;
+    if (!container || footnotes.length === 0) return;
 
     const measure = () => {
-      const wrap = wrapRef.current;
-      if (!wrap) return;
-
-      // Only align notes when the margin column is visible (>1100px).
-      // Below that breakpoint notes are hidden via CSS, so leave positions
-      // and minHeight unset to avoid pushing paragraphs apart for nothing.
       if (window.innerWidth <= 1100) {
-        setNotePositions(null);
-        setMinHeight(undefined);
+        setPositions(null);
         return;
       }
-
-      const wrapTop = wrap.getBoundingClientRect().top;
+      const containerTop = container.getBoundingClientRect().top;
 
       let prevBottom = 0;
       const result: Record<string, number> = {};
 
-      for (const fn of uniqueCited) {
-        const marker = wrap.querySelector(`sup[data-fn-id="${fn.id}"]`);
-        const ideal = marker ? marker.getBoundingClientRect().top - wrapTop : 0;
+      for (const fn of footnotes) {
+        const marker = container.querySelector(`sup[data-fn-id="${fn.id}"]`);
+        if (!marker) continue;
+        const ideal = marker.getBoundingClientRect().top - containerTop;
         const top = Math.max(ideal, prevBottom);
         result[fn.id] = top;
 
@@ -374,95 +396,77 @@ function BodyParagraph({
         prevBottom = top + noteH + NOTE_CASCADE_GAP;
       }
 
-      setNotePositions(result);
-      // If the last note extends below the paragraph text, grow the wrapper
-      // so it doesn't overlap the next paragraph.
-      setMinHeight(prevBottom > 0 ? prevBottom : undefined);
+      setPositions(result);
     };
 
-    // Measure after fonts are ready (affects line wrapping → marker position)
     document.fonts?.ready.then(measure);
 
     const ro = new ResizeObserver(measure);
-    ro.observe(wrapRef.current);
-    return () => ro.disconnect();
+    ro.observe(container);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text]);
+  }, [footnotes]);
+
+  if (footnotes.length === 0) return null;
 
   return (
-    <div ref={wrapRef} style={{ position: "relative", margin: "0 0 26px", minHeight }}>
-      <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: `${fontSize}px`, lineHeight: 1.75, color: "#2a2520", margin: 0, textAlign: "left" }}>
-        {firstChar && (
-          <span
+    <div
+      className="tm-margin-note-col"
+      style={{
+        position: "absolute",
+        // container is padded 40px left/right; put notes 48px past the
+        // text's right edge (= container right edge − right padding + gap).
+        left: "calc(100% - 40px + 48px)",
+        top: 0,
+        width: "240px",
+        pointerEvents: "none",
+      }}
+    >
+      {footnotes.map((fn) => {
+        const isFocus = (hoverFnId || activeFnId) === fn.id;
+        const top = positions?.[fn.id] ?? 0;
+        return (
+          <aside
+            key={fn.id}
+            ref={noteRef(fn.id)}
+            className="tm-margin-note"
+            data-active={isFocus ? "1" : "0"}
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "84px",
-              lineHeight: 0.82,
-              fontWeight: 500,
-              color: accent,
-              float: "left",
-              marginRight: "14px",
-              marginTop: "8px",
-              marginBottom: "-6px",
+              position: "absolute",
+              top: `${top}px`,
+              width: "100%",
+              opacity: positions ? 1 : 0,
+              pointerEvents: "auto",
+              fontFamily: "'Source Serif 4', Georgia, serif",
+              fontSize: "13.5px",
+              lineHeight: 1.55,
+              color: isFocus ? "#1a1714" : "#8b7f72",
+              paddingLeft: "16px",
+              borderLeft: `2px solid ${isFocus ? accent : "#d4cdc2"}`,
+              transition: "color 0.2s ease, border-color 0.2s ease, opacity 0.25s ease",
             }}
           >
-            {firstChar}
-          </span>
-        )}
-        {nodes}
-      </p>
-      {uniqueCited.length > 0 && (
-        <div
-          className="tm-margin-note-col"
-          style={{
-            position: "absolute",
-            left: "calc(100% + 48px)",
-            top: 0,
-            width: "240px",
-          }}
-        >
-          {uniqueCited.map((fn) => {
-            const isFocus = (hoverFnId || activeFnId) === fn.id;
-            const top = notePositions?.[fn.id] ?? 0;
-            return (
-              <aside
-                key={fn.id}
-                ref={noteRef(fn.id)}
-                className="tm-margin-note"
-                data-active={isFocus ? "1" : "0"}
-                style={{
-                  position: "absolute",
-                  top: `${top}px`,
-                  width: "100%",
-                  opacity: notePositions ? 1 : 0,
-                  fontFamily: "'Source Serif 4', Georgia, serif",
-                  fontSize: "13.5px",
-                  lineHeight: 1.55,
-                  color: isFocus ? "#1a1714" : "#8b7f72",
-                  paddingLeft: "16px",
-                  borderLeft: `2px solid ${isFocus ? accent : "#d4cdc2"}`,
-                  transition: "color 0.2s ease, border-color 0.2s ease, opacity 0.25s ease",
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "10.5px",
-                    fontWeight: 700,
-                    color: accent,
-                    letterSpacing: "0.08em",
-                    display: "block",
-                    marginBottom: "4px",
-                  }}
-                >
-                  [{fn.id}]
-                </span>
-                {renderInline(fn.note)}
-              </aside>
-            );
-          })}
-        </div>
-      )}
+            <span
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "10.5px",
+                fontWeight: 700,
+                color: accent,
+                letterSpacing: "0.08em",
+                display: "block",
+                marginBottom: "4px",
+              }}
+            >
+              [{fn.id}]
+            </span>
+            {renderInline(fn.note)}
+          </aside>
+        );
+      })}
     </div>
   );
 }
@@ -581,6 +585,7 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
   const blocks: Block[] = article.fullBody || [{ type: "p", text: article.body }];
   const endnotes = collectFootnotes(blocks);
   const firstParagraphIdx = blocks.findIndex((b) => b.type === "p");
+  const contentRef = useRef<HTMLDivElement>(null);
 
   return (
     <article data-article-body data-article-id={article.id}>
@@ -595,7 +600,7 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
         />
       )}
 
-      <div style={{ maxWidth: `${measure}px`, margin: "0 auto", padding: "56px 40px 40px", position: "relative" }}>
+      <div ref={contentRef} style={{ maxWidth: `${measure}px`, margin: "0 auto", padding: "56px 40px 40px", position: "relative" }}>
         {blocks.map((block, i) => {
           // Indent from the rich editor (Tab / indent button). Scales per level.
           const indentLevel = "indent" in block && typeof block.indent === "number" ? block.indent : 0;
@@ -643,6 +648,13 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
             </div>
           );
         })}
+        <MarginNotesColumn
+          containerRef={contentRef}
+          footnotes={endnotes}
+          accent={accent}
+          hoverFnId={hoverFn?.id || null}
+          activeFnId={activeFn?.id || null}
+        />
       </div>
 
       <Endnotes notes={endnotes} accent={accent} />

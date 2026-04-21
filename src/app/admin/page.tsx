@@ -85,6 +85,7 @@ export default async function AdminDashboard() {
           <ActionCard href="/admin/media" title="Media library" description="Upload standalone images and copy their public URLs to paste into articles." />
           <ActionCard href="/admin/comments" title="Moderate comments" description="Approve or delete pending reader letters." />
           <ActionCard href="/admin/about" title="Edit the About page" description="Update the bio and affiliations shown to readers." />
+          <ActionCard href="/admin/author-bio" title="Edit author bio" description="The red-bordered box at the end of every article." />
         </div>
       </section>
     </div>

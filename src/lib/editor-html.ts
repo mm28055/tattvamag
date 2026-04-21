@@ -64,3 +64,24 @@ export function extractFootnotesFromEditorHtml(
 function stripHtml(s: string): string {
   return s.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 }
+
+// Many scraped / .docx-ingested articles have the subtitle duplicated as the
+// leading <p>. The reader already drops it (see frontend-data.ts), so do the
+// same when sending the body to the editor — otherwise the admin sees a stray
+// lede paragraph that doesn't show up on the live page.
+export function stripLeadingSubtitleParagraph(bodyHtml: string, subtitle: string): string {
+  if (!bodyHtml || !subtitle) return bodyHtml;
+  const subtitleText = subtitle.replace(/\s+/g, " ").trim();
+  if (!subtitleText) return bodyHtml;
+  const match = bodyHtml.match(/^\s*<p\b[^>]*>([\s\S]*?)<\/p>/i);
+  if (!match) return bodyHtml;
+  const firstText = stripHtml(match[1]);
+  if (
+    firstText === subtitleText ||
+    firstText.startsWith(subtitleText) ||
+    subtitleText.startsWith(firstText)
+  ) {
+    return bodyHtml.slice(match[0].length).replace(/^\s+/, "");
+  }
+  return bodyHtml;
+}

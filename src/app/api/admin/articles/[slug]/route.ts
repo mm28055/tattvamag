@@ -6,7 +6,7 @@ import { isAuthenticated } from "@/lib/auth";
 import { invalidateContentCache } from "@/lib/content";
 import { saveCoverImage, uploadMedia, hasR2 } from "@/lib/r2";
 import { markdownToArticleHtml } from "@/lib/markdown";
-import { annotateFootnotesForEditor, extractFootnotesFromEditorHtml } from "@/lib/editor-html";
+import { annotateFootnotesForEditor, extractFootnotesFromEditorHtml, stripLeadingSubtitleParagraph } from "@/lib/editor-html";
 import { revalidatePublicContent } from "@/lib/revalidate";
 import mammoth from "mammoth";
 
@@ -156,7 +156,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       tags: (r.tags || []).map((t) => t.name).join(", "),
       footnoteCount: (r.footnotes || []).length,
       displayOrder: r.display_order,
-      bodyHtml: annotateFootnotesForEditor(r.body, r.footnotes || []),
+      bodyHtml: annotateFootnotesForEditor(
+        stripLeadingSubtitleParagraph(r.body, r.subtitle || ""),
+        r.footnotes || [],
+      ),
     },
   });
 }

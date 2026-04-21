@@ -475,7 +475,7 @@ function MarginNotesColumn({
 function Endnotes({ notes, accent }: { notes: FnToken[]; accent: string }) {
   if (!notes.length) return null;
   return (
-    <section style={{ maxWidth: "680px", margin: "72px auto 0", padding: "40px 40px 40px", borderTop: "1px solid #d8d2c8" }}>
+    <section style={{ maxWidth: "680px", margin: "28px auto 0", padding: "32px 40px 32px", borderTop: "1px solid #d8d2c8" }}>
       <div
         style={{
           fontFamily: "'DM Sans', sans-serif",
@@ -715,7 +715,7 @@ function ShareAndBio({
     <section
       style={{
         maxWidth: "680px",
-        margin: "40px auto 0",
+        margin: "32px auto 0",
         padding: "0 40px",
       }}
     >
@@ -736,9 +736,10 @@ function ShareAndBio({
                 width: "34px",
                 height: "34px",
                 borderRadius: "50%",
+                background: "#1a1714",
+                color: "#FAF5E8",
                 border: "1px solid #1a1714",
-                color: "#1a1714",
-                transition: "color 0.2s ease, border-color 0.2s ease, background 0.2s ease",
+                transition: "background 0.2s ease, border-color 0.2s ease",
                 ["--tm-share-accent" as string]: accent,
               } as React.CSSProperties
             }
@@ -767,7 +768,7 @@ function ShareAndBio({
 
       <style>{`
         .tm-share-btn:hover {
-          color: var(--tm-share-accent) !important;
+          background: var(--tm-share-accent) !important;
           border-color: var(--tm-share-accent) !important;
         }
       `}</style>

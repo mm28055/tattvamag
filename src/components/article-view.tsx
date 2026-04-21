@@ -477,10 +477,10 @@ function MarginNotesColumn({
 }
 
 // ══════ Endnotes ══════
-function Endnotes({ notes, accent }: { notes: FnToken[]; accent: string }) {
+function Endnotes({ notes, accent, measure }: { notes: FnToken[]; accent: string; measure: number }) {
   if (!notes.length) return null;
   return (
-    <section style={{ maxWidth: "680px", margin: "28px auto 0", padding: "32px 40px 32px", borderTop: "1px solid #d8d2c8" }}>
+    <section style={{ maxWidth: `${measure}px`, margin: "28px auto 0", padding: "32px 40px 32px", borderTop: "1px solid #d8d2c8" }}>
       <div
         style={{
           fontFamily: "'DM Sans', sans-serif",
@@ -662,8 +662,8 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
         />
       </div>
 
-      <Endnotes notes={endnotes} accent={accent} />
-      <ShareAndBio slug={article.slug} title={article.title} accent={accent} />
+      <Endnotes notes={endnotes} accent={accent} measure={measure} />
+      <ShareAndBio slug={article.slug} title={article.title} accent={accent} measure={measure} />
       <MobileFnSheet fn={activeFn} onClose={() => setActiveFn(null)} accent={accent} />
     </article>
   );
@@ -674,10 +674,12 @@ function ShareAndBio({
   slug,
   title,
   accent,
+  measure,
 }: {
   slug: string;
   title: string;
   accent: string;
+  measure: number;
 }) {
   const [shareUrl, setShareUrl] = useState("");
   useEffect(() => {
@@ -719,7 +721,7 @@ function ShareAndBio({
   return (
     <section
       style={{
-        maxWidth: "680px",
+        maxWidth: `${measure}px`,
         margin: "32px auto 0",
         padding: "0 40px",
       }}
@@ -897,7 +899,7 @@ export default function ArticleView({
               </div>
             )}
             <ArticleBody article={article} accent={accent} tagMuted={tagMuted} measure={measure} bodyFontSize={bodyFontSize} />
-            <CommentsClient slug={article.slug} accent={accent} />
+            <CommentsClient slug={article.slug} accent={accent} measure={measure} />
             {isLast && nextArticle && (
               <>
                 <NextArticlePreview article={nextArticle} tagMuted={tagMuted} />

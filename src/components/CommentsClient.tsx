@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 
 type ApiComment = { id: number; name: string; body: string; createdAt: string };
 
-export default function CommentsClient({ slug, accent }: { slug: string; accent: string }) {
+export default function CommentsClient({ slug, accent, measure = 780 }: { slug: string; accent: string; measure?: number }) {
   const [comments, setComments] = useState<ApiComment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -37,7 +37,7 @@ export default function CommentsClient({ slug, accent }: { slug: string; accent:
   return (
     <section
       style={{
-        maxWidth: "680px",
+        maxWidth: `${measure}px`,
         margin: "0 auto",
         padding: "40px 40px 0",
         borderTop: "1px solid #d8d2c8",

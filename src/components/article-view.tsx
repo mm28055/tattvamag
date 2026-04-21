@@ -617,6 +617,39 @@ export default function ArticleView({
     window.scrollTo({ top: 0 });
   }, [startArticle.id]);
 
+  // Sync the URL as the reader scrolls from one article into the next.
+  useEffect(() => {
+    let rafId: number | null = null;
+    const update = () => {
+      rafId = null;
+      const articles = Array.from(document.querySelectorAll<HTMLElement>("[data-article-id]"));
+      if (!articles.length) return;
+      const mid = window.innerHeight / 2;
+      let active: HTMLElement | null = null;
+      for (const a of articles) {
+        const r = a.getBoundingClientRect();
+        if (r.top <= mid && r.bottom >= mid) { active = a; break; }
+      }
+      if (!active) return;
+      const id = active.dataset.articleId;
+      if (!id) return;
+      const match = allArticles.find((a) => a.id === id);
+      if (!match) return;
+      const targetPath = `/${match.slug}`;
+      if (window.location.pathname === targetPath) return;
+      window.history.replaceState(null, "", `${targetPath}${window.location.search}`);
+    };
+    const onScroll = () => {
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId != null) cancelAnimationFrame(rafId);
+    };
+  }, [allArticles]);
+
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {

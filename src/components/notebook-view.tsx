@@ -22,6 +22,37 @@ export default function NotebookView({ entries, accent, tagMuted }: { entries: F
     return () => clearTimeout(t);
   }, []);
 
+  // Sync the URL hash as the reader scrolls from one entry into the next.
+  useEffect(() => {
+    let rafId: number | null = null;
+    const update = () => {
+      rafId = null;
+      const items = Array.from(document.querySelectorAll<HTMLElement>("[data-notebook-id]"));
+      if (!items.length) return;
+      const mid = window.innerHeight / 2;
+      let active: HTMLElement | null = null;
+      for (const el of items) {
+        const r = el.getBoundingClientRect();
+        if (r.top <= mid && r.bottom >= mid) { active = el; break; }
+      }
+      if (!active) return;
+      const id = active.dataset.notebookId;
+      if (!id) return;
+      const targetHash = `#${id}`;
+      if (window.location.hash === targetHash) return;
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${targetHash}`);
+    };
+    const onScroll = () => {
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId != null) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   return (
     <main style={{ padding: "0 0 100px" }}>
       {/* Header */}

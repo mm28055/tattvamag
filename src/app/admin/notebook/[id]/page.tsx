@@ -1,9 +1,9 @@
 "use client";
 // Edit an existing notebook entry. Prefilled from GET /api/admin/notebook/[id].
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { InsertImageButton } from "@/components/admin/InsertImageButton";
+import NotebookRichEditor from "@/components/admin/NotebookRichEditor";
 
 type EntryData = {
   id: string;
@@ -29,7 +29,19 @@ export default function EditNotebookEntryPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  async function uploadImage(imgFile: File): Promise<string | null> {
+    const form = new FormData();
+    form.append("file", imgFile);
+    const res = await fetch("/api/admin/media", { method: "POST", body: form });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setMessage({ kind: "error", text: d.error || "Image upload failed." });
+      return null;
+    }
+    const data = await res.json();
+    return typeof data.url === "string" ? data.url : null;
+  }
 
   useEffect(() => {
     fetch(`/api/admin/notebook/${id}`)
@@ -119,9 +131,8 @@ export default function EditNotebookEntryPage() {
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required style={inputStyle} />
           </Field>
 
-          <Field label="Body" required help="Markdown. Blank line = new paragraph. **bold**, *italic*, # heading, > quote, [link](url), ![image](url).">
-            <textarea ref={bodyRef} value={body} onChange={(e) => setBody(e.target.value)} rows={16} style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }} required />
-            <InsertImageButton getTextarea={() => bodyRef.current} onChange={setBody} />
+          <Field as="div" label="Body" required help="Bold, italic, headings, quotes, lists, links, and images — all inline.">
+            <NotebookRichEditor value={body} onChange={setBody} onUploadImage={uploadImage} />
           </Field>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
@@ -155,9 +166,10 @@ export default function EditNotebookEntryPage() {
   );
 }
 
-function Field({ label, help, required, children }: { label: string; help?: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, help, required, children, as }: { label: string; help?: string; required?: boolean; children: React.ReactNode; as?: "label" | "div" }) {
+  const Tag = as || "label";
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+    <Tag style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
       <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600, color: "#5a5048" }}>
         {label} {required && <span style={{ color: "#B83A14" }}>*</span>}
       </span>
@@ -167,7 +179,7 @@ function Field({ label, help, required, children }: { label: string; help?: stri
           {help}
         </span>
       )}
-    </label>
+    </Tag>
   );
 }
 

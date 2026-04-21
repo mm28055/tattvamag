@@ -25,7 +25,17 @@ function formatLongDate(iso: string): string {
   }
 }
 
+// Admin-authored bodies are stored as HTML from the rich editor; legacy
+// entries are markdown. Detect by checking whether the string starts with a
+// tag — markdown rarely does.
+function looksLikeHtml(body: string): boolean {
+  return /^\s*</.test(body);
+}
+
 async function rowToEntry(r: DbRow): Promise<FrontendNotebookEntry> {
+  const bodyHtml = looksLikeHtml(r.body)
+    ? r.body
+    : await marked.parse(r.body, { breaks: false, gfm: true });
   return {
     id: r.id,
     title: r.title,
@@ -35,7 +45,7 @@ async function rowToEntry(r: DbRow): Promise<FrontendNotebookEntry> {
       ? r.date_published
       : new Date(r.date_published).toISOString().slice(0, 10)),
     body: r.body,
-    bodyHtml: await marked.parse(r.body, { breaks: false, gfm: true }),
+    bodyHtml,
   };
 }
 

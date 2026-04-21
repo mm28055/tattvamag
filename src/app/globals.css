@@ -92,6 +92,21 @@ button { font-family: inherit; }
   filter: sepia(0.1) saturate(0.92);
 }
 .tm-notebook-body a { color: #B83A14; text-decoration: underline; text-underline-offset: 3px; }
+.tm-notebook-body ul, .tm-notebook-body ol { padding-left: 24px; margin: 1em 0 0; }
+.tm-notebook-body ul li, .tm-notebook-body ol li { margin: 0.25em 0; }
+.tm-notebook-body figure { margin: 22px 0; text-align: center; }
+.tm-notebook-body figure img { margin: 0 auto; }
+.tm-notebook-body figcaption {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 13.5px;
+  color: #8b7f72;
+  text-align: center;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.tm-notebook-body strong { font-weight: 600; color: #1a1714; }
+.tm-notebook-body em { font-style: italic; }
 .tm-notebook-body code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.92em;

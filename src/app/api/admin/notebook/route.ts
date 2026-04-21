@@ -9,6 +9,10 @@ import { revalidatePublicContent } from "@/lib/revalidate";
 
 export const runtime = "nodejs";
 
+function isBodyEmpty(body: string): boolean {
+  return !body.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").trim();
+}
+
 function slugify(s: string): string {
   return s
     .toLowerCase()
@@ -37,7 +41,7 @@ export async function POST(req: Request) {
   const datePublishedRaw = String(body.datePublished || "").trim();
 
   if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
-  if (!bodyText) return NextResponse.json({ error: "Body is required" }, { status: 400 });
+  if (isBodyEmpty(bodyText)) return NextResponse.json({ error: "Body is required" }, { status: 400 });
 
   const id = slugify(customId || title);
   if (!id) return NextResponse.json({ error: "Could not derive an id from the title" }, { status: 400 });

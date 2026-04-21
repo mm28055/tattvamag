@@ -1,9 +1,9 @@
 "use client";
 // Quick notebook entry composer. No .docx required — just type.
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { InsertImageButton } from "@/components/admin/InsertImageButton";
+import NotebookRichEditor from "@/components/admin/NotebookRichEditor";
 
 export default function NewNotebookEntryPage() {
   const router = useRouter();
@@ -14,13 +14,25 @@ export default function NewNotebookEntryPage() {
   const [customId, setCustomId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  async function uploadImage(imgFile: File): Promise<string | null> {
+    const form = new FormData();
+    form.append("file", imgFile);
+    const res = await fetch("/api/admin/media", { method: "POST", body: form });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error || "Image upload failed.");
+      return null;
+    }
+    const data = await res.json();
+    return typeof data.url === "string" ? data.url : null;
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!title.trim()) { setError("Title is required."); return; }
-    if (!body.trim()) { setError("Body is required."); return; }
+    if (!body.replace(/<[^>]+>/g, "").trim()) { setError("Body is required."); return; }
     setSubmitting(true);
     const res = await fetch("/api/admin/notebook", {
       method: "POST",
@@ -53,7 +65,7 @@ export default function NewNotebookEntryPage() {
         </Link>
       </div>
       <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: "13.5px", color: "#6b6259", marginBottom: "24px", lineHeight: 1.6 }}>
-        Short journal posts — fragments, marginalia, works in progress. Markdown is supported: blank lines between paragraphs, **bold**, *italic*, # headings, {">"} quote, and `[link text](https://…)`. Use the button below the body to upload an image.
+        Short journal posts — fragments, marginalia, works in progress. Use the toolbar for bold, italic, headings, quotes, lists, links, and images.
       </p>
 
       <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -61,9 +73,8 @@ export default function NewNotebookEntryPage() {
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required style={inputStyle} />
         </Field>
 
-        <Field label="Body" required help="Markdown. Blank line = new paragraph. **bold**, *italic*, # heading, > quote, [link](url), ![image](url).">
-          <textarea ref={bodyRef} value={body} onChange={(e) => setBody(e.target.value)} rows={16} style={{ ...inputStyle, fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "15px", lineHeight: 1.6, resize: "vertical" }} required />
-          <InsertImageButton getTextarea={() => bodyRef.current} onChange={setBody} />
+        <Field as="div" label="Body" required help="Bold, italic, headings, quotes, lists, links, and images — all inline. Press Enter for a new paragraph.">
+          <NotebookRichEditor value={body} onChange={setBody} onUploadImage={uploadImage} />
         </Field>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
@@ -94,9 +105,12 @@ export default function NewNotebookEntryPage() {
   );
 }
 
-function Field({ label, help, required, children }: { label: string; help?: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, help, required, children, as }: { label: string; help?: string; required?: boolean; children: React.ReactNode; as?: "label" | "div" }) {
+  // `as="div"` for fields that wrap a contenteditable — a <label> would
+  // redirect clicks to the first labelable element inside (a toolbar button).
+  const Tag = as || "label";
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+    <Tag style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
       <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600, color: "#5a5048" }}>
         {label} {required && <span style={{ color: "#B83A14" }}>*</span>}
       </span>
@@ -106,7 +120,7 @@ function Field({ label, help, required, children }: { label: string; help?: stri
           {help}
         </span>
       )}
-    </label>
+    </Tag>
   );
 }
 

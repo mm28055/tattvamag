@@ -1,11 +1,20 @@
 // Per-notebook-entry admin API: GET (fetch), PUT (update), DELETE (remove).
 import { NextResponse } from "next/server";
+import { marked } from "marked";
 import { sql, hasDb } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
 import { invalidateNotebookCache } from "@/lib/notebook-data";
 import { revalidatePublicContent } from "@/lib/revalidate";
 
 export const runtime = "nodejs";
+
+function looksLikeHtml(body: string): boolean {
+  return /^\s*</.test(body);
+}
+
+function isBodyEmpty(body: string): boolean {
+  return !body.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").trim();
+}
 
 async function requireAuth() {
   if (!(await isAuthenticated())) {
@@ -35,11 +44,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   const r = rows[0];
+  // The rich editor wants HTML. New entries are stored as HTML; legacy entries
+  // are markdown — convert those on the way out so the editor can load them.
+  const bodyForEditor = looksLikeHtml(r.body)
+    ? r.body
+    : await marked.parse(r.body, { breaks: false, gfm: true });
   return NextResponse.json({
     entry: {
       id: r.id,
       title: r.title,
-      body: r.body,
+      body: bodyForEditor,
       tags: (r.tags || []).join(", "),
       author: r.author,
       datePublished: typeof r.date_published === "string"
@@ -70,7 +84,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const displayOrderRaw = body.displayOrder;
 
   if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
-  if (!bodyText) return NextResponse.json({ error: "Body is required" }, { status: 400 });
+  if (isBodyEmpty(bodyText)) return NextResponse.json({ error: "Body is required" }, { status: 400 });
 
   const isISO = /^\d{4}-\d{2}-\d{2}$/.test(datePublishedRaw);
   const displayOrder =

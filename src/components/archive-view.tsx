@@ -22,13 +22,13 @@ export default function ArchiveView({
   notebookEntries,
   accent,
   tagMuted,
-  authorBio,
+  authorBios,
 }: {
   articles: FrontendArticle[];
   notebookEntries: FrontendNotebookEntry[];
   accent: string;
   tagMuted: string;
-  authorBio?: string;
+  authorBios?: Record<string, string>;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -265,9 +265,9 @@ export default function ArchiveView({
       )}
 
       {/* Author bio */}
-      {activeAuthor && authorBio && (
+      {activeAuthor && authorBios?.[activeAuthor] && (
         <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14px", lineHeight: 1.7, color: "#5a5048", marginBottom: "28px", paddingBottom: "28px", borderBottom: "1px solid #d8d2c8" }}>
-          {authorBio}
+          {authorBios[activeAuthor]}
         </div>
       )}
 

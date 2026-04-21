@@ -7,12 +7,10 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import RichEditor from "@/components/admin/RichEditor";
 
-const CATEGORIES = [
-  { slug: "history", name: "History" },
-  { slug: "yoga-meditation", name: "Yoga & Meditation" },
-  { slug: "art-culture", name: "Art & Culture" },
-  { slug: "religion-philosophy", name: "Religion & Philosophy" },
-];
+// Category is stored in the DB but no longer shown on the reader site
+// (homepage/article/archive all use tags instead). Admin form submits a
+// default so the existing API contract + DB column stay valid.
+const DEFAULT_CATEGORY = "history";
 
 type ArticleData = {
   slug: string;
@@ -40,7 +38,6 @@ export default function AdminEditArticlePage() {
 
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [category, setCategory] = useState("history");
   const [type, setType] = useState<"essay" | "note">("essay");
   const [tags, setTags] = useState("");
   const [illustrator, setIllustrator] = useState("");
@@ -69,7 +66,6 @@ export default function AdminEditArticlePage() {
         setData(a);
         setTitle(a.title);
         setSubtitle(a.subtitle || "");
-        setCategory(a.categorySlug || "history");
         setType(a.type === "note" ? "note" : "essay");
         setTags(a.tags || "");
         setIllustrator(a.illustrator || "");
@@ -88,7 +84,7 @@ export default function AdminEditArticlePage() {
     const form = new FormData();
     form.append("title", title);
     form.append("subtitle", subtitle);
-    form.append("category", category);
+    form.append("category", DEFAULT_CATEGORY);
     form.append("type", type);
     form.append("tags", tags);
     form.append("illustrator", illustrator);
@@ -193,14 +189,6 @@ export default function AdminEditArticlePage() {
 
           <Field label="Subtitle">
             <input type="text" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} style={inputStyle} />
-          </Field>
-
-          <Field label="Category" required>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle}>
-              {CATEGORIES.map((c) => (
-                <option key={c.slug} value={c.slug}>{c.name}</option>
-              ))}
-            </select>
           </Field>
 
           <Field label="Tags" help="Comma-separated.">

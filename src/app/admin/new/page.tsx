@@ -4,12 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RichEditor from "@/components/admin/RichEditor";
 
-const CATEGORIES = [
-  { slug: "history", name: "History" },
-  { slug: "yoga-meditation", name: "Yoga & Meditation" },
-  { slug: "art-culture", name: "Art & Culture" },
-  { slug: "religion-philosophy", name: "Religion & Philosophy" },
-];
+// Category is stored in the DB but no longer shown on the reader site
+// (homepage/article/archive all use tags instead). Admin form submits a
+// default so the existing API contract + DB column stay valid.
+const DEFAULT_CATEGORY = "history";
 
 export default function NewArticlePage() {
   const router = useRouter();
@@ -19,7 +17,6 @@ export default function NewArticlePage() {
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [category, setCategory] = useState("history");
   const [tags, setTags] = useState("");
   const [type, setType] = useState<"essay" | "note">("essay");
   const [illustrator, setIllustrator] = useState("");
@@ -63,7 +60,7 @@ export default function NewArticlePage() {
     if (coverImage) form.append("coverImage", coverImage);
     form.append("title", title);
     form.append("subtitle", subtitle);
-    form.append("category", category);
+    form.append("category", DEFAULT_CATEGORY);
     form.append("tags", tags);
     form.append("type", type);
     form.append("illustrator", illustrator);
@@ -173,16 +170,6 @@ export default function NewArticlePage() {
             onChange={(e) => setSubtitle(e.target.value)}
             style={inputStyle}
           />
-        </Field>
-
-        <Field label="Category" required>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle}>
-            {CATEGORIES.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.name}
-              </option>
-            ))}
-          </select>
         </Field>
 
         <Field label="Tags" help="Comma-separated, e.g. “shaivism, epigraphy, bhakti”">

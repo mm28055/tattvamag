@@ -1,7 +1,7 @@
 "use client";
 // Ported from Article.jsx. Single article page with classical header, drop cap,
 // inline <fn id="N" note="..." /> tokens with hover margin notes, endnotes, infinite scroll.
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { Tags, TagAsLink } from "./common";
@@ -285,6 +285,11 @@ function Pullquote({ text, accent }: { text: string; accent: string }) {
 }
 
 // ══════ Body paragraph with optional drop cap + margin footnote ══════
+// Margin notes are vertically aligned with their in-text [N] marker.
+// When two notes would overlap (same line, adjacent lines), the second
+// cascades downward with a small gap so they never collide.
+const NOTE_CASCADE_GAP = 10; // px between stacked margin notes
+
 function BodyParagraph({
   text,
   dropCap,
@@ -308,6 +313,7 @@ function BodyParagraph({
   while ((m = re.exec(text)) !== null) {
     cited.push({ id: m[1], note: m[2].replace(/\\"/g, '"') });
   }
+  const uniqueCited = cited.filter((fn, i, arr) => arr.findIndex((x) => x.id === fn.id) === i);
 
   let firstChar: string | null = null;
   let body = text;
@@ -321,8 +327,52 @@ function BodyParagraph({
 
   const nodes = renderParagraphNodes(body, accent, onOpenFn, hoverFnId || activeFnId);
 
+  // ── Marker-aligned positioning for margin notes ──
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const noteElsRef = useRef<Map<string, HTMLElement>>(new Map());
+  const [notePositions, setNotePositions] = useState<Record<string, number> | null>(null);
+
+  const noteRef = useCallback((id: string) => (el: HTMLElement | null) => {
+    if (el) noteElsRef.current.set(id, el);
+    else noteElsRef.current.delete(id);
+  }, []);
+
+  useEffect(() => {
+    if (!wrapRef.current || uniqueCited.length === 0) return;
+
+    const measure = () => {
+      const wrap = wrapRef.current;
+      if (!wrap) return;
+      const wrapTop = wrap.getBoundingClientRect().top;
+
+      let prevBottom = 0;
+      const result: Record<string, number> = {};
+
+      for (const fn of uniqueCited) {
+        const marker = wrap.querySelector(`sup[data-fn-id="${fn.id}"]`);
+        const ideal = marker ? marker.getBoundingClientRect().top - wrapTop : 0;
+        const top = Math.max(ideal, prevBottom);
+        result[fn.id] = top;
+
+        const noteEl = noteElsRef.current.get(fn.id);
+        const noteH = noteEl ? noteEl.getBoundingClientRect().height : 40;
+        prevBottom = top + noteH + NOTE_CASCADE_GAP;
+      }
+
+      setNotePositions(result);
+    };
+
+    // Measure after fonts are ready (affects line wrapping → marker position)
+    document.fonts?.ready.then(measure);
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text]);
+
   return (
-    <div style={{ position: "relative", margin: "0 0 26px" }}>
+    <div ref={wrapRef} style={{ position: "relative", margin: "0 0 26px" }}>
       <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: `${fontSize}px`, lineHeight: 1.75, color: "#2a2520", margin: 0, textAlign: "left" }}>
         {firstChar && (
           <span
@@ -343,7 +393,7 @@ function BodyParagraph({
         )}
         {nodes}
       </p>
-      {cited.length > 0 && (
+      {uniqueCited.length > 0 && (
         <div
           className="tm-margin-note-col"
           style={{
@@ -351,48 +401,48 @@ function BodyParagraph({
             left: "calc(100% + 48px)",
             top: 0,
             width: "240px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "18px",
           }}
         >
-          {/* dedupe — if the same footnote is cited twice in one paragraph, show it once */}
-          {cited
-            .filter((fn, i, arr) => arr.findIndex((x) => x.id === fn.id) === i)
-            .map((fn) => {
-              const isFocus = (hoverFnId || activeFnId) === fn.id;
-              return (
-                <aside
-                  key={fn.id}
-                  className="tm-margin-note"
-                  data-active={isFocus ? "1" : "0"}
+          {uniqueCited.map((fn) => {
+            const isFocus = (hoverFnId || activeFnId) === fn.id;
+            const top = notePositions?.[fn.id] ?? 0;
+            return (
+              <aside
+                key={fn.id}
+                ref={noteRef(fn.id)}
+                className="tm-margin-note"
+                data-active={isFocus ? "1" : "0"}
+                style={{
+                  position: "absolute",
+                  top: `${top}px`,
+                  width: "100%",
+                  opacity: notePositions ? 1 : 0,
+                  fontFamily: "'Source Serif 4', Georgia, serif",
+                  fontSize: "13.5px",
+                  lineHeight: 1.55,
+                  color: isFocus ? "#1a1714" : "#8b7f72",
+                  paddingLeft: "16px",
+                  borderLeft: `2px solid ${isFocus ? accent : "#d4cdc2"}`,
+                  transition: "color 0.2s ease, border-color 0.2s ease, opacity 0.25s ease",
+                }}
+              >
+                <span
                   style={{
-                    fontFamily: "'Source Serif 4', Georgia, serif",
-                    fontSize: "13.5px",
-                    lineHeight: 1.55,
-                    color: isFocus ? "#1a1714" : "#8b7f72",
-                    paddingLeft: "16px",
-                    borderLeft: `2px solid ${isFocus ? accent : "#d4cdc2"}`,
-                    transition: "color 0.2s ease, border-color 0.2s ease",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "10.5px",
+                    fontWeight: 700,
+                    color: accent,
+                    letterSpacing: "0.08em",
+                    display: "block",
+                    marginBottom: "4px",
                   }}
                 >
-                  <span
-                    style={{
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: "10.5px",
-                      fontWeight: 700,
-                      color: accent,
-                      letterSpacing: "0.08em",
-                      display: "block",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    [{fn.id}]
-                  </span>
-                  {renderInline(fn.note)}
-                </aside>
-              );
-            })}
+                  [{fn.id}]
+                </span>
+                {renderInline(fn.note)}
+              </aside>
+            );
+          })}
         </div>
       )}
     </div>

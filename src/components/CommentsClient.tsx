@@ -36,6 +36,7 @@ export default function CommentsClient({ slug, accent, measure = 780 }: { slug: 
 
   return (
     <section
+      className="tm-article-outer"
       style={{
         maxWidth: `${measure}px`,
         margin: "0 auto",

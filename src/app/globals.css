@@ -83,7 +83,8 @@ button { font-family: inherit; }
   [data-article-body] > header,
   [data-article-body] > figure,
   [data-article-body] > div,
-  [data-article-body] > section {
+  [data-article-body] > section,
+  .tm-article-outer {
     padding-left: 20px !important;
     padding-right: 20px !important;
   }

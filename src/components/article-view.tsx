@@ -1010,7 +1010,7 @@ export default function ArticleView({
         return (
           <React.Fragment key={`${id}-${idx}`}>
             {idx > 0 && (
-              <div style={{ maxWidth: "1020px", margin: "120px auto 0", padding: "0 40px" }}>
+              <div className="tm-article-outer" style={{ maxWidth: "1020px", margin: "120px auto 0", padding: "0 40px" }}>
                 <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", letterSpacing: "0.24em", textTransform: "uppercase", color: accent, fontWeight: 600, marginBottom: "10px" }}>
                   Next article
                 </div>

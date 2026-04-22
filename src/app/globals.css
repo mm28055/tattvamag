@@ -25,13 +25,21 @@ button { font-family: inherit; }
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
+  /* Match both the spaced and un-spaced serializations of the inline style
+   * attribute. React used to emit `grid-template-columns: 1fr 1fr` (with a
+   * space after the colon); newer versions emit `grid-template-columns:1fr 1fr`
+   * (no space). Selectors need to cover both. */
   [style*="grid-template-columns: 1fr 1fr"],
-  [style*="gridTemplateColumns: 1fr 1fr"] {
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="gridTemplateColumns: 1fr 1fr"],
+  [style*="gridTemplateColumns:1fr 1fr"] {
     grid-template-columns: 1fr !important;
     gap: 40px !important;
   }
   [style*="grid-template-columns: 1fr 1fr 1fr"],
-  [style*="gridTemplateColumns: 1fr 1fr 1fr"] {
+  [style*="grid-template-columns:1fr 1fr 1fr"],
+  [style*="gridTemplateColumns: 1fr 1fr 1fr"],
+  [style*="gridTemplateColumns:1fr 1fr 1fr"] {
     grid-template-columns: 1fr !important;
     gap: 48px !important;
   }
@@ -81,21 +89,26 @@ button { font-family: inherit; }
   /* ── Home: SecondaryCard has asymmetric padding for desktop dividers;
    * reset to symmetric edge-padding on mobile once the grid has stacked. ── */
   [style*="grid-template-columns: 1fr 1fr 1fr"] > article,
-  [style*="gridTemplateColumns: 1fr 1fr 1fr"] > article {
+  [style*="grid-template-columns:1fr 1fr 1fr"] > article,
+  [style*="gridTemplateColumns: 1fr 1fr 1fr"] > article,
+  [style*="gridTemplateColumns:1fr 1fr 1fr"] > article {
     padding-left: 0 !important;
     padding-right: 0 !important;
     border-right: none !important;
   }
   /* Notebook preview cards (2-col grid on desktop) — same reset. */
   [style*="grid-template-columns: 1fr 1fr"] > article,
-  [style*="gridTemplateColumns: 1fr 1fr"] > article {
+  [style*="grid-template-columns:1fr 1fr"] > article,
+  [style*="gridTemplateColumns: 1fr 1fr"] > article,
+  [style*="gridTemplateColumns:1fr 1fr"] > article {
     padding-left: 0 !important;
     padding-right: 0 !important;
     border-right: none !important;
   }
   /* More Reading columns use nested 1fr 1fr, which stacks — kill the
    * column divider that was between the A and B columns. */
-  [style*="grid-template-columns: 1fr 1fr"] > div[style*="border-right"] {
+  [style*="grid-template-columns: 1fr 1fr"] > div[style*="border-right"],
+  [style*="grid-template-columns:1fr 1fr"] > div[style*="border-right"] {
     border-right: none !important;
   }
 }

@@ -6,12 +6,13 @@ import { SITE } from "@/lib/site-config";
 export default function SiteFooter() {
   const accent = SITE.accent;
   return (
-    <footer style={{ background: "#2B2520", padding: "56px 40px 40px", marginTop: "40px" }}>
+    <footer style={{ background: "#2B2520", paddingTop: "56px", paddingBottom: "40px", marginTop: "40px" }}>
       <div
         className="tm-footer-grid"
         style={{
           maxWidth: "1200px",
           margin: "0 auto",
+          padding: "0 40px",
           display: "grid",
           gridTemplateColumns: "1.2fr 1fr 1fr",
           gap: "56px",
@@ -102,7 +103,7 @@ export default function SiteFooter() {
         style={{
           maxWidth: "1200px",
           margin: "28px auto 0",
-          paddingTop: "18px",
+          padding: "18px 40px 0",
           borderTop: "1px solid #3d3530",
           display: "flex",
           justifyContent: "space-between",

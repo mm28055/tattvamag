@@ -502,44 +502,49 @@ function MarginNotesColumn({
 function Endnotes({ notes, accent, measure }: { notes: FnToken[]; accent: string; measure: number }) {
   if (!notes.length) return null;
   return (
-    <section style={{ maxWidth: `${measure}px`, margin: "0 auto", padding: "28px 40px 32px 72px", borderTop: "1px solid #d8d2c8" }}>
-      <div
-        style={{
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: "11px",
-          letterSpacing: "0.22em",
-          textTransform: "uppercase",
-          color: accent,
-          fontWeight: 600,
-          marginBottom: "20px",
-        }}
-      >
-        Notes
+    <section style={{ maxWidth: `${measure}px`, margin: "0 auto", padding: "0 40px 32px" }}>
+      {/* Rule aligns with the body text column (section padding 40px).
+       * Content inside gets an extra 32px indent for the end-of-essay
+       * coda look. */}
+      <div style={{ borderTop: "1px solid #d8d2c8", paddingTop: "28px", paddingLeft: "32px" }}>
+        <div
+          style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: "11px",
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: accent,
+            fontWeight: 600,
+            marginBottom: "20px",
+          }}
+        >
+          Notes
+        </div>
+        <ol style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {notes.map((fn, i) => (
+            <li
+              key={fn.id}
+              id={`endnote-${fn.id}`}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "36px 1fr",
+                gap: "8px",
+                padding: "14px 0",
+                borderBottom: i < notes.length - 1 ? "1px solid #e8e4dc" : "none",
+                fontFamily: "'Source Serif 4', Georgia, serif",
+                fontSize: "14px",
+                lineHeight: 1.65,
+                color: "#3a3530",
+              }}
+            >
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: 700, color: accent, letterSpacing: "0.06em" }}>
+                [{fn.id}]
+              </span>
+              <span>{renderInline(fn.note)}</span>
+            </li>
+          ))}
+        </ol>
       </div>
-      <ol style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {notes.map((fn, i) => (
-          <li
-            key={fn.id}
-            id={`endnote-${fn.id}`}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "36px 1fr",
-              gap: "8px",
-              padding: "14px 0",
-              borderBottom: i < notes.length - 1 ? "1px solid #e8e4dc" : "none",
-              fontFamily: "'Source Serif 4', Georgia, serif",
-              fontSize: "14px",
-              lineHeight: 1.65,
-              color: "#3a3530",
-            }}
-          >
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: 700, color: accent, letterSpacing: "0.06em" }}>
-              [{fn.id}]
-            </span>
-            <span>{renderInline(fn.note)}</span>
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }

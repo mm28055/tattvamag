@@ -39,10 +39,13 @@ export default function CommentsClient({ slug, accent, measure = 780 }: { slug: 
       style={{
         maxWidth: `${measure}px`,
         margin: "0 auto",
-        padding: "40px 40px 0 72px",
-        borderTop: "1px solid #d8d2c8",
+        padding: "0 40px",
       }}
     >
+      {/* Rule aligns with the body text column (section padding 40px).
+       * Content inside gets an extra 32px indent for the end-of-essay
+       * coda look — matching the Notes section. */}
+      <div style={{ borderTop: "1px solid #d8d2c8", paddingTop: "40px", paddingLeft: "32px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "16px" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "14px", flexWrap: "wrap" }}>
           <span
@@ -136,6 +139,7 @@ export default function CommentsClient({ slug, accent, measure = 780 }: { slug: 
 
       <LetterModal open={modalOpen} onClose={() => setModalOpen(false)} onSubmit={submit} accent={accent} />
       <LetterConfirmation open={thanksOpen} onClose={() => setThanksOpen(false)} accent={accent} />
+      </div>
     </section>
   );
 }

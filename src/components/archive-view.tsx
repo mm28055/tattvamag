@@ -42,6 +42,7 @@ export default function ArchiveView({
   const [activeTag, setActiveTag] = useState<string | null>(initialTag);
   const [activeAuthor, setActiveAuthor] = useState<string | null>(initialAuthor);
   const [authorOpen, setAuthorOpen] = useState(false);
+  const [tagsExpanded, setTagsExpanded] = useState(false);
 
   useEffect(() => {
     setTab(initialTab);
@@ -212,32 +213,61 @@ export default function ArchiveView({
 
       {/* Tag chips */}
       {allTags.length > 0 && (
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "20px" }}>
-          {allTags.map((tg) => {
-            const on = activeTag === tg;
-            return (
-              <span
-                key={tg}
-                onClick={() => setActiveTag(on ? null : tg)}
-                style={{
-                  padding: "5px 12px",
-                  border: `1px solid ${on ? accent : "#d4cdc2"}`,
-                  background: on ? accent : "transparent",
-                  color: on ? "#fff" : tagMuted,
-                  borderRadius: "16px",
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "10.5px",
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {tg}
-              </span>
-            );
-          })}
+        <div style={{ marginBottom: "20px" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              flexWrap: "wrap",
+              maxHeight: tagsExpanded ? "none" : "72px",
+              overflow: "hidden",
+            }}
+          >
+            {allTags.map((tg) => {
+              const on = activeTag === tg;
+              return (
+                <span
+                  key={tg}
+                  onClick={() => setActiveTag(on ? null : tg)}
+                  style={{
+                    padding: "5px 12px",
+                    border: `1px solid ${on ? accent : "#d4cdc2"}`,
+                    background: on ? accent : "transparent",
+                    color: on ? "#fff" : tagMuted,
+                    borderRadius: "16px",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "10.5px",
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {tg}
+                </span>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => setTagsExpanded((v) => !v)}
+            style={{
+              marginTop: "8px",
+              background: "none",
+              border: "none",
+              padding: 0,
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "10.5px",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+              color: tagMuted,
+              cursor: "pointer",
+              opacity: 0.7,
+            }}
+          >
+            {tagsExpanded ? "Show less ↑" : "Show all ↓"}
+          </button>
         </div>
       )}
 

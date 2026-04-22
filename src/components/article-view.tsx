@@ -297,7 +297,7 @@ function Pullquote({ text, accent }: { text: string; accent: string }) {
           style={{
             fontFamily: "'Cormorant Garamond', serif",
             fontStyle: "italic",
-            fontSize: "20px",
+            fontSize: "22px",
             lineHeight: 1.5,
             color: "#6b6259",
             margin: "18px 0 0",

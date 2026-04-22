@@ -31,27 +31,26 @@ export function annotateFootnotesForEditor(bodyHtml: string, footnotes: EditorFo
 // and renumber refs sequentially in order of appearance so the reader always
 // sees 1, 2, 3… regardless of what the editor assigned internally. Called by
 // the POST/PUT endpoints when htmlBody arrives.
+//
+// Each <sup> always gets its own fresh sequential number. We deliberately do
+// NOT de-duplicate by the editor's existing data-ref value — the editor
+// renders numbers via a CSS counter (position-based), so the stored data-ref
+// can drift (e.g. copy-paste duplicates it) while the author sees clean
+// sequential numbering in the editor. Trusting data-ref caused two distinct
+// footnotes to be collapsed into one on save.
 export function extractFootnotesFromEditorHtml(
   editorHtml: string,
 ): { html: string; footnotes: EditorFootnote[] } {
   if (!editorHtml) return { html: "", footnotes: [] };
   const $ = cheerio.load(`<div id="__root">${editorHtml}</div>`, { xml: false });
   const footnotes: EditorFootnote[] = [];
-  const seen = new Map<string, string>(); // original-ref → new-num
   let counter = 1;
 
   $("#__root sup.footnote-ref, #__root sup[data-ref]").each((_, el) => {
     const $el = $(el);
-    const orig = $el.attr("data-ref") || $el.text().trim();
     const note = $el.attr("data-note") || "";
-    let num: string;
-    if (orig && seen.has(orig)) {
-      num = seen.get(orig)!;
-    } else {
-      num = String(counter++);
-      if (orig) seen.set(orig, num);
-      footnotes.push({ num, text: note, html: note });
-    }
+    const num = String(counter++);
+    footnotes.push({ num, text: note, html: note });
     $el.attr("data-ref", num);
     $el.removeAttr("data-note");
     $el.text(num);

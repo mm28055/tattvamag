@@ -121,7 +121,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <SiteHeader />
-        <main>{children}</main>
+        {/* No outer <main> wrapper — every page renders its own
+         * <main> (homepage, archive, notebook, about) or its own
+         * <article> (article pages). Nesting would create duplicate
+         * main landmarks AND stack the mobile padding CSS rule twice,
+         * inset content ~60px on each side at phone widths. */}
+        {children}
         <SiteFooter />
       </body>
     </html>

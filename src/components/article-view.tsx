@@ -800,6 +800,27 @@ function NextArticlePreview({ article, tagMuted }: { article: FrontendArticle; t
   );
 }
 
+// ══════ End of archive marker (shown after the last article) ══════
+function EndOfArchiveMarker({ accent }: { accent: string }) {
+  return (
+    <div style={{ maxWidth: "680px", margin: "80px auto 0", padding: "56px 40px 72px", textAlign: "center", borderTop: "1px solid #d8d2c8" }}>
+      <div style={{ width: "40px", height: "1.5px", background: accent, margin: "0 auto 28px", opacity: 0.7 }} />
+      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", letterSpacing: "0.24em", textTransform: "uppercase", color: "#9e958a", fontWeight: 600, marginBottom: "16px" }}>
+        End of the archive
+      </div>
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "20px", color: "#6b6259", margin: "0 0 28px", lineHeight: 1.5 }}>
+        You&rsquo;ve reached the last essay. More writing is on the way.
+      </p>
+      <Link
+        href={"/archive" as Route}
+        style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: accent, fontWeight: 600, textDecoration: "none", borderBottom: `1px solid ${accent}`, paddingBottom: "2px" }}
+      >
+        Browse the archive
+      </Link>
+    </div>
+  );
+}
+
 // ══════ ArticleView (main export, with infinite scroll) ══════
 export default function ArticleView({
   startArticle,
@@ -867,7 +888,7 @@ export default function ArticleView({
           setChain((c) => {
             const last = c[c.length - 1];
             const idx = allArticles.findIndex((a) => a.id === last);
-            const next = allArticles[(idx + 1) % allArticles.length];
+            const next = idx >= 0 ? allArticles[idx + 1] : undefined;
             if (!next || c.includes(next.id)) return c;
             return [...c, next.id];
           });
@@ -886,7 +907,8 @@ export default function ArticleView({
       {chain.map((id, idx) => {
         const article = allArticles.find((a) => a.id === id);
         if (!article) return null;
-        const nextArticle = allArticles[(allArticles.findIndex((a) => a.id === id) + 1) % allArticles.length];
+        const articleIdx = allArticles.findIndex((a) => a.id === id);
+        const nextArticle = articleIdx >= 0 ? allArticles[articleIdx + 1] : undefined;
         const isLast = idx === chain.length - 1;
         return (
           <React.Fragment key={`${id}-${idx}`}>
@@ -906,6 +928,7 @@ export default function ArticleView({
                 <div ref={sentinelRef} style={{ height: "40px" }} />
               </>
             )}
+            {isLast && !nextArticle && <EndOfArchiveMarker accent={accent} />}
           </React.Fragment>
         );
       })}

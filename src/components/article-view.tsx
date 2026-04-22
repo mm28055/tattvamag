@@ -821,6 +821,53 @@ function EndOfArchiveMarker({ accent }: { accent: string }) {
   );
 }
 
+// Per-session reading order: shuffle the archive once per browser tab/session so
+// each visit surfaces a different reading sequence, but refreshing or navigating
+// within the same session keeps the order stable. The currently-opened article
+// is always pinned at position 0 — the rest of the shuffle follows after it.
+const SHUFFLE_STORAGE_KEY = "tattva:reader-shuffle-v1";
+
+function buildSessionReadingList(
+  startArticle: FrontendArticle,
+  allArticles: FrontendArticle[],
+): FrontendArticle[] {
+  const ids = allArticles.map((a) => a.id);
+  let shuffled: string[] | null = null;
+  try {
+    const stored = window.sessionStorage.getItem(SHUFFLE_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as unknown;
+      if (
+        Array.isArray(parsed) &&
+        parsed.length === ids.length &&
+        parsed.every((id): id is string => typeof id === "string" && ids.includes(id))
+      ) {
+        shuffled = parsed as string[];
+      }
+    }
+  } catch {
+    // sessionStorage unavailable (private mode, disabled, etc.) — fall through.
+  }
+  if (!shuffled) {
+    shuffled = [...ids];
+    // Fisher-Yates
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    try {
+      window.sessionStorage.setItem(SHUFFLE_STORAGE_KEY, JSON.stringify(shuffled));
+    } catch {
+      // best-effort only
+    }
+  }
+  const byId = new Map(allArticles.map((a) => [a.id, a]));
+  const rest = shuffled
+    .map((id) => byId.get(id))
+    .filter((a): a is FrontendArticle => !!a && a.id !== startArticle.id);
+  return [startArticle, ...rest];
+}
+
 // ══════ ArticleView (main export, with infinite scroll) ══════
 export default function ArticleView({
   startArticle,
@@ -838,11 +885,18 @@ export default function ArticleView({
   bodyFontSize: number;
 }) {
   const [chain, setChain] = useState<string[]>([startArticle.id]);
+  // SSR uses the raw order (keeps hydration stable); client replaces with the
+  // per-session shuffle once mounted.
+  const [readingList, setReadingList] = useState<FrontendArticle[]>(allArticles);
 
   useEffect(() => {
     setChain([startArticle.id]);
     window.scrollTo({ top: 0 });
   }, [startArticle.id]);
+
+  useEffect(() => {
+    setReadingList(buildSessionReadingList(startArticle, allArticles));
+  }, [startArticle, allArticles]);
 
   // Sync the URL as the reader scrolls from one article into the next.
   useEffect(() => {
@@ -887,8 +941,8 @@ export default function ArticleView({
         if (entries[0].isIntersecting) {
           setChain((c) => {
             const last = c[c.length - 1];
-            const idx = allArticles.findIndex((a) => a.id === last);
-            const next = idx >= 0 ? allArticles[idx + 1] : undefined;
+            const idx = readingList.findIndex((a) => a.id === last);
+            const next = idx >= 0 ? readingList[idx + 1] : undefined;
             if (!next || c.includes(next.id)) return c;
             return [...c, next.id];
           });
@@ -898,7 +952,7 @@ export default function ArticleView({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [chain, allArticles]);
+  }, [chain, readingList]);
 
   return (
     <div data-screen-label={`article-${startArticle.id}`}>
@@ -907,8 +961,8 @@ export default function ArticleView({
       {chain.map((id, idx) => {
         const article = allArticles.find((a) => a.id === id);
         if (!article) return null;
-        const articleIdx = allArticles.findIndex((a) => a.id === id);
-        const nextArticle = articleIdx >= 0 ? allArticles[articleIdx + 1] : undefined;
+        const articleIdx = readingList.findIndex((a) => a.id === id);
+        const nextArticle = articleIdx >= 0 ? readingList[articleIdx + 1] : undefined;
         const isLast = idx === chain.length - 1;
         return (
           <React.Fragment key={`${id}-${idx}`}>

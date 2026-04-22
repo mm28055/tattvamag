@@ -136,7 +136,22 @@ button { font-family: inherit; }
   /* More Reading columns use nested 1fr 1fr, which stacks — convert the
    * desktop column divider (border-right on Column A) into a horizontal
    * rule so there's a visible line between Column A (articles 5, 6) and
-   * Column B (article 7) when stacked. */
+   * Column B (article 7) when stacked. Zero out the grid gap so the only
+   * space between Column A and Column B comes from the articles' own
+   * padding (45px each side of the divider). The MoreReading grid is the
+   * only 1fr 1fr grid with `align-items: stretch` in its inline style —
+   * Notebook and FeaturedEssay split use different alignment, so we use
+   * that to target this grid specifically. */
+  [style*="grid-template-columns: 1fr 1fr"][style*="align-items: stretch"],
+  [style*="grid-template-columns:1fr 1fr"][style*="align-items: stretch"],
+  [style*="grid-template-columns: 1fr 1fr"][style*="align-items:stretch"],
+  [style*="grid-template-columns:1fr 1fr"][style*="align-items:stretch"],
+  [style*="grid-template-columns: 1fr 1fr"][style*="alignItems: stretch"],
+  [style*="grid-template-columns:1fr 1fr"][style*="alignItems: stretch"],
+  [style*="grid-template-columns: 1fr 1fr"][style*="alignItems:stretch"],
+  [style*="grid-template-columns:1fr 1fr"][style*="alignItems:stretch"] {
+    gap: 0 !important;
+  }
   [style*="grid-template-columns: 1fr 1fr"] > div[style*="border-right"],
   [style*="grid-template-columns:1fr 1fr"] > div[style*="border-right"] {
     border-right: none !important;

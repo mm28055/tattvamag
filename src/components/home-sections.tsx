@@ -367,13 +367,24 @@ export function QuoteSeparator({ quote, accent }: { quote: FrontendEpigraph; acc
             color: "#2a2520",
           }}
         >
-          {quote.lines.map((line, i) =>
-            line === "" ? (
-              <div key={i} style={{ height: "14px" }} />
-            ) : (
-              <div key={i}>{line}</div>
-            )
-          )}
+          {quote.lines.map((line, i) => {
+            if (line === "") return <div key={i} style={{ height: "14px" }} />;
+            // Split into sentences (e.g. "Do not neglect the truth. Do not
+            // neglect the Dharma."). Desktop: spans flow inline as one line.
+            // Mobile: CSS turns each span into a block so each sentence sits
+            // on its own line — avoids orphan words like "Dharma." alone.
+            const sentences = line.split(/(?<=\.)\s+/);
+            return (
+              <div key={i}>
+                {sentences.map((s, j) => (
+                  <span key={j} className="tm-quote-sentence">
+                    {s}
+                    {j < sentences.length - 1 ? " " : ""}
+                  </span>
+                ))}
+              </div>
+            );
+          })}
         </div>
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "#9e958a", marginTop: "32px", fontWeight: 500 }}>
           — {quote.attribution}

@@ -190,6 +190,10 @@ button { font-family: inherit; }
   main > section:nth-of-type(3) {
     padding-top: 5px !important;
   }
+  /* Epigraph on mobile: each sentence on its own line so long quotes
+   * don't leave single-word orphans wrapped on the next line. Desktop
+   * keeps sentences flowing together inline. */
+  .tm-quote-sentence { display: block; }
 }
 
 @media (max-width: 520px) {

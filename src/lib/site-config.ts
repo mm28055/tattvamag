@@ -8,7 +8,7 @@ export const SITE = {
   featuredLayout: "split" as "split" | "centered",
   headerVariant: "classical" as "classical" | "editorial",
   measure: 780, // article reading column — matches tattvamag.org
-  bodyFontSize: 18,
+  bodyFontSize: 19,
   maxPage: 1200, // main container — matches tattvamag.org (uses 1206)
 };
 

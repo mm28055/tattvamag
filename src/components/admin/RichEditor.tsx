@@ -83,14 +83,18 @@ const FootnoteRef = Node.create({
     return [{ tag: "sup.footnote-ref" }];
   },
   renderHTML({ HTMLAttributes }) {
-    const num = (HTMLAttributes["data-ref"] as string) || "";
     const note = (HTMLAttributes["data-note"] as string) || "";
     // `title` gives editors a hover preview of the note text. The server
     // strips data-note (and re-renders) before saving, so this never ships
     // to readers.
     const attrs: Record<string, string> = { class: "footnote-ref" };
     if (note) attrs.title = note;
-    return ["sup", mergeAttributes(HTMLAttributes, attrs), num];
+    // Render an empty sup — the displayed number is injected by a CSS
+    // counter (see .footnote-ref::before in the editor stylesheet) so it
+    // always matches position, not the stale stored data-ref. The
+    // data-ref attribute is preserved on the element for server-side
+    // mapping back to the note body on save.
+    return ["sup", mergeAttributes(HTMLAttributes, attrs)];
   },
 });
 
@@ -322,15 +326,26 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
           color: #6b6259;
           line-height: 1.5;
         }
+        /* Live sequential footnote numbering — the editor shows [1], [2],
+           [3]… based on position, not on the stored data-ref. This keeps
+           the editor in sync with the reader view even between edits and
+           the next save/reload. */
+        .tm-rich-editor .ProseMirror {
+          counter-reset: footnote-ref;
+        }
         .tm-rich-editor .ProseMirror sup.footnote-ref {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 11px;
-          font-weight: 600;
-          color: #B83A14;
+          counter-increment: footnote-ref;
           padding: 0 3px;
           cursor: pointer;
           background: #f0e6d6;
           border-radius: 2px;
+        }
+        .tm-rich-editor .ProseMirror sup.footnote-ref::before {
+          content: counter(footnote-ref);
+          font-family: 'DM Sans', sans-serif;
+          font-size: 11px;
+          font-weight: 600;
+          color: #B83A14;
         }
         .tm-rich-editor .ProseMirror sup.footnote-ref:hover {
           background: #e6d7b8;

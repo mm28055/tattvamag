@@ -588,7 +588,10 @@ const editorShellStyle: React.CSSProperties = {
   border: "1px solid #d4cdc2",
   borderRadius: "2px",
   background: "#fff",
-  overflow: "hidden",
+  // Note: `overflow: hidden` would break `position: sticky` on the toolbar
+  // below — any overflow-clipping ancestor confines a sticky child. Leave
+  // overflow at its default (visible) so the toolbar can latch to the
+  // viewport top while the reader scrolls through long body content.
 };
 
 const toolbarStyle: React.CSSProperties = {
@@ -599,6 +602,13 @@ const toolbarStyle: React.CSSProperties = {
   padding: "8px 10px",
   borderBottom: "1px solid #e2ddd5",
   background: "#faf5e8",
+  // Pin the toolbar to the top of the viewport while the user scrolls
+  // through a long body. It unsticks automatically once the editor shell
+  // scrolls past, so it only hovers while you're inside the body field.
+  position: "sticky",
+  top: 0,
+  zIndex: 10,
+  boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 4px 8px -6px rgba(0,0,0,0.15)",
 };
 
 const swatchPanelStyle: React.CSSProperties = {

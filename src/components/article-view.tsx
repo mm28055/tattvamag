@@ -502,7 +502,7 @@ function MarginNotesColumn({
 function Endnotes({ notes, accent, measure }: { notes: FnToken[]; accent: string; measure: number }) {
   if (!notes.length) return null;
   return (
-    <section style={{ maxWidth: `${measure}px`, margin: "28px auto 0", padding: "32px 40px 32px", borderTop: "1px solid #d8d2c8" }}>
+    <section style={{ maxWidth: `${measure}px`, margin: "28px auto 0", padding: "32px 40px 32px 72px", borderTop: "1px solid #d8d2c8" }}>
       <div
         style={{
           fontFamily: "'DM Sans', sans-serif",
@@ -745,7 +745,7 @@ function ShareAndBio({
       style={{
         maxWidth: `${measure}px`,
         margin: "32px auto 0",
-        padding: "0 40px",
+        padding: "0 40px 0 72px",
       }}
     >
       <div style={{ display: "flex", gap: "14px", marginBottom: "28px" }}>

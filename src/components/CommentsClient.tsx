@@ -39,7 +39,7 @@ export default function CommentsClient({ slug, accent, measure = 780 }: { slug: 
       style={{
         maxWidth: `${measure}px`,
         margin: "0 auto",
-        padding: "40px 40px 0",
+        padding: "40px 40px 0 72px",
         borderTop: "1px solid #d8d2c8",
       }}
     >

@@ -2,7 +2,7 @@
 // Admin article edit — prefilled from /api/admin/articles/[slug] (GET).
 // Upload a replacement .docx or cover image, or tweak metadata in place.
 // Delete button wired to DELETE on the same endpoint.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import RichEditor from "@/components/admin/RichEditor";
@@ -55,6 +55,7 @@ export default function AdminEditArticlePage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     Promise.all([
@@ -190,7 +191,7 @@ export default function AdminEditArticlePage() {
       {loading ? (
         <p style={{ color: "#8b7f72", fontStyle: "italic" }}>Loading…</p>
       ) : (
-        <form onSubmit={save} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <form ref={formRef} onSubmit={save} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <Field label="Title" required>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required style={inputStyle} />
           </Field>
@@ -233,7 +234,13 @@ export default function AdminEditArticlePage() {
             label="Body"
             help={`${data?.footnoteCount ?? 0} footnote${data?.footnoteCount === 1 ? "" : "s"} · ${data?.readTime || "—"}. Bold, italic, headings, lists, quotes, links, images with editable alt text, and inline colour. Click a footnote marker (e.g. ¹) to select it, then hit "Edit footnote" in the toolbar to change or delete its text.`}
           >
-            <RichEditor value={bodyHtml} onChange={setBodyHtml} onUploadImage={uploadImage} />
+            <RichEditor
+              value={bodyHtml}
+              onChange={setBodyHtml}
+              onUploadImage={uploadImage}
+              onSave={() => formRef.current?.requestSubmit()}
+              saving={saving}
+            />
           </Field>
 
           <Field
@@ -296,6 +303,36 @@ export default function AdminEditArticlePage() {
                 {message.text}
               </span>
             )}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e2ddd5" }}>
+            <Link
+              href="/admin/articles"
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "11px",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#6b6259",
+                textDecoration: "none",
+              }}
+            >
+              ← All articles
+            </Link>
+            <Link
+              href={`/${slug}`}
+              target="_blank"
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "11px",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#B83A14",
+                textDecoration: "none",
+              }}
+            >
+              View live →
+            </Link>
           </div>
         </form>
       )}

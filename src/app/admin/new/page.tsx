@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RichEditor from "@/components/admin/RichEditor";
@@ -26,6 +26,7 @@ export default function NewArticlePage() {
   const [authors, setAuthors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     fetch("/api/admin/author-bio")
@@ -135,7 +136,7 @@ export default function NewArticlePage() {
         already have one drafted. A cover image is optional either way.
       </p>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-5">
         {/* Mode toggle: write in the rich editor OR upload a Word doc. */}
         <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--color-divider-soft)", paddingBottom: "2px" }}>
           <button type="button" onClick={() => setMode("inline")} style={tabStyle(mode === "inline")}>
@@ -162,7 +163,14 @@ export default function NewArticlePage() {
             required
             help="Bold, italic, headings, lists, quotes, links, inline colour, images (with editable alt text), and footnotes — all inline. Use the Fn+ button to add a footnote at the cursor; click an existing footnote marker then hit “Edit footnote” to change or delete its text."
           >
-            <RichEditor value={bodyHtml} onChange={setBodyHtml} onUploadImage={uploadImage} />
+            <RichEditor
+              value={bodyHtml}
+              onChange={setBodyHtml}
+              onUploadImage={uploadImage}
+              onSave={() => formRef.current?.requestSubmit()}
+              saving={submitting}
+              saveLabel="Publish"
+            />
           </Field>
         )}
 
@@ -277,6 +285,25 @@ export default function NewArticlePage() {
               {error}
             </span>
           )}
+        </div>
+
+        <div
+          className="flex items-baseline mt-6 pt-5"
+          style={{ borderTop: "1px solid var(--color-divider-soft)" }}
+        >
+          <Link
+            href="/admin"
+            style={{
+              fontFamily: "var(--font-sans), sans-serif",
+              fontSize: "12px",
+              color: "var(--color-meta)",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+            }}
+            className="hover:text-[color:var(--color-accent)]"
+          >
+            ← Back
+          </Link>
         </div>
       </form>
     </div>

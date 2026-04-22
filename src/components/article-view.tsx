@@ -280,11 +280,33 @@ function BodyImage({ src, label, caption }: { src?: string; label?: string; capt
 
 // ══════ Pullquote ══════
 function Pullquote({ text, accent }: { text: string; accent: string }) {
+  // frontend-data preserves paragraph breaks inside the source <blockquote>
+  // as \n\n. The first paragraph is the quote body (wrapped in curly
+  // quotes); any subsequent paragraphs are attribution/continuation lines
+  // shown plainly on their own line, no quotes around them.
+  const paras = text.split(/\n\n+/).map((s) => s.trim()).filter(Boolean);
+  const [quote, ...rest] = paras.length > 0 ? paras : [text];
   return (
     <blockquote style={{ margin: "52px 0", padding: "40px 0", borderTop: `1px solid ${accent}`, borderBottom: `1px solid ${accent}`, textAlign: "center" }}>
       <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "28px", lineHeight: 1.4, color: "#2a2520", margin: 0, fontWeight: 400 }}>
-        “{text}”
+        “{quote}”
       </p>
+      {rest.map((line, i) => (
+        <p
+          key={i}
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontStyle: "italic",
+            fontSize: "20px",
+            lineHeight: 1.5,
+            color: "#6b6259",
+            margin: "18px 0 0",
+            fontWeight: 400,
+          }}
+        >
+          {line}
+        </p>
+      ))}
     </blockquote>
   );
 }

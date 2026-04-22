@@ -203,8 +203,22 @@ function buildBlocksAndInline(
     }
 
     if (tag === "blockquote") {
-      // Use the first paragraph's text as the pullquote content.
-      const text = $c.text().replace(/\s+/g, " ").trim();
+      // Preserve paragraph structure inside the blockquote so the renderer
+      // can show the quote body and its attribution (a following <p>,
+      // usually wrapped in <em>…</em>) on separate lines. Paragraphs are
+      // joined by \n\n; the Pullquote renderer splits on that separator.
+      const paraTexts: string[] = [];
+      const $paras = $c.find("> p");
+      if ($paras.length > 0) {
+        $paras.each((_, pEl) => {
+          const t = $(pEl).text().replace(/\s+/g, " ").trim();
+          if (t) paraTexts.push(t);
+        });
+      } else {
+        const t = $c.text().replace(/\s+/g, " ").trim();
+        if (t) paraTexts.push(t);
+      }
+      const text = paraTexts.join("\n\n");
       if (text) pushBlock({ type: "pullquote", text });
       return;
     }

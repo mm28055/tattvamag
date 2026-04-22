@@ -3,7 +3,7 @@ import { sql, hasDb } from "./db";
 
 const DEFAULT_BIOS: Record<string, string> = {
   "Manish Maheshwari":
-    "Manish Maheshwari is the curator and editor of Tattva. He can be contacted at contact@tattvamag.org. He runs Tattva Heritage Foundation (www.tattvaheritage.org) and Centre for Shaiva Studies (www.shaivastudies.in).",
+    "Manish Maheshwari is the curator and editor of Tattva. He can be contacted at contact@tattva.in. He runs Tattva Heritage Foundation (www.tattvaheritage.org) and Centre for Shaiva Studies (www.shaivastudies.in).",
 };
 
 export async function getAuthorBios(): Promise<Record<string, string>> {

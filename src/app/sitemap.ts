@@ -6,7 +6,7 @@ import { getAllNotebookEntriesAsync } from "@/lib/notebook-data";
 
 export const revalidate = 3600;
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://tattvamag.org").replace(/\/$/, "");
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://tattva.in").replace(/\/$/, "");
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [articles, notebook] = await Promise.all([

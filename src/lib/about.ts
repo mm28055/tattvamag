@@ -13,7 +13,7 @@ export const DEFAULT_ABOUT: AboutContent = {
   intro:
     "Tattva is the intellectual notebook of Manish Maheshwari. It covers Indian textual traditions, philosophy, history, colonial discourse, and the question of how inherited sources of meaning survive under modernity.",
   bio:
-    "Manish is the founder of the Tattva Heritage Foundation and the Centre for Shaiva Studies, Pondicherry. He publishes under the Karṇāṭa imprint and is based in Mysore.",
+    "Manish is the founder of the Tattva Heritage Foundation and the Centre for Shaiva Studies, Pondicherry.",
   closing: "This site is updated periodically.",
 };
 

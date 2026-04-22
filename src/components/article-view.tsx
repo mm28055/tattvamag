@@ -91,17 +91,29 @@ function FootnoteSup({
   accent,
   onOpen,
   isActive,
+  isMobile,
 }: {
   fn: FnToken;
   accent: string;
   onOpen: (fn: FnToken | null, isOn: boolean) => void;
   isActive: boolean;
+  isMobile: boolean;
 }) {
   const [hover, setHover] = useState(false);
+  // On mobile, avoid mouseenter/mouseleave entirely: touch browsers synthesize
+  // them around `click`, and opening the sheet on mouseenter lets its
+  // full-screen backdrop swallow the subsequent click — which immediately
+  // closes the sheet. Result: first tap "flutters" and nothing sticks.
+  // Click-only keeps the tap bound to the <sup> until the handler runs.
+  const hoverHandlers = isMobile
+    ? {}
+    : {
+        onMouseEnter: () => { setHover(true); onOpen(fn, true); },
+        onMouseLeave: () => { setHover(false); onOpen(null, false); },
+      };
   return (
     <sup
-      onMouseEnter={() => { setHover(true); onOpen(fn, true); }}
-      onMouseLeave={() => { setHover(false); onOpen(null, false); }}
+      {...hoverHandlers}
       onClick={(e) => { e.stopPropagation(); onOpen(fn, true); }}
       data-fn-id={fn.id}
       style={{
@@ -126,13 +138,14 @@ function renderParagraphNodes(
   accent: string,
   onOpenFn: (fn: FnToken | null, isOn: boolean) => void,
   activeFnId: string | null,
+  isMobile: boolean,
 ): React.ReactNode[] {
   const nodes = parseFootnotes(text);
   return nodes.map((n, i) => {
     if (typeof n === "string") {
       return <React.Fragment key={i}>{renderInline(n)}</React.Fragment>;
     }
-    return <FootnoteSup key={i} fn={n.footnote} accent={accent} onOpen={onOpenFn} isActive={activeFnId === n.footnote.id} />;
+    return <FootnoteSup key={i} fn={n.footnote} accent={accent} onOpen={onOpenFn} isActive={activeFnId === n.footnote.id} isMobile={isMobile} />;
   });
 }
 
@@ -323,6 +336,7 @@ function BodyParagraph({
   hoverFnId,
   activeFnId,
   fontSize,
+  isMobile,
 }: {
   text: string;
   dropCap: boolean;
@@ -331,6 +345,7 @@ function BodyParagraph({
   hoverFnId: string | null;
   activeFnId: string | null;
   fontSize: number;
+  isMobile: boolean;
 }) {
   let firstChar: string | null = null;
   let body = text;
@@ -342,7 +357,7 @@ function BodyParagraph({
     }
   }
 
-  const nodes = renderParagraphNodes(body, accent, onOpenFn, hoverFnId || activeFnId);
+  const nodes = renderParagraphNodes(body, accent, onOpenFn, hoverFnId || activeFnId, isMobile);
 
   return (
     <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: `${fontSize}px`, lineHeight: 1.75, color: "#2a2520", margin: "0 0 26px", textAlign: "left" }}>
@@ -676,6 +691,7 @@ function ArticleBody({ article, accent, tagMuted, measure, bodyFontSize }: { art
                 hoverFnId={hoverFn?.id || null}
                 activeFnId={activeFn?.id || null}
                 fontSize={bodyFontSize}
+                isMobile={isMobile}
               />
             </div>
           );

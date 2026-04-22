@@ -114,7 +114,7 @@ button { font-family: inherit; }
   [style*="grid-template-columns:1fr 1fr 1fr"] > article,
   [style*="gridTemplateColumns: 1fr 1fr 1fr"] > article,
   [style*="gridTemplateColumns:1fr 1fr 1fr"] > article {
-    padding: 30px 0 !important;
+    padding: 45px 0 !important;
     border-right: none !important;
   }
   [style*="grid-template-columns: 1fr 1fr 1fr"] > article:not(:last-child),
@@ -135,11 +135,33 @@ button { font-family: inherit; }
   /* More Reading columns use nested 1fr 1fr, which stacks — convert the
    * desktop column divider (border-right on Column A) into a horizontal
    * rule so there's a visible line between Column A (articles 5, 6) and
-   * Column B (article 7) when stacked. */
+   * Column B (article 7) when stacked. 45px breathing room above the line
+   * (last ColumnA article 30px + div padding-bottom 15px) and below it
+   * (ColumnB article padding-top 45px). */
   [style*="grid-template-columns: 1fr 1fr"] > div[style*="border-right"],
   [style*="grid-template-columns:1fr 1fr"] > div[style*="border-right"] {
     border-right: none !important;
     border-bottom: 1px solid #e2ddd5 !important;
+    padding-bottom: 15px !important;
+  }
+  /* ColumnB article (has height:100% in its inline style, unlike notebook cards). */
+  [style*="grid-template-columns: 1fr 1fr"] > article[style*="height: 100%"],
+  [style*="grid-template-columns:1fr 1fr"] > article[style*="height: 100%"],
+  [style*="grid-template-columns: 1fr 1fr"] > article[style*="height:100%"],
+  [style*="grid-template-columns:1fr 1fr"] > article[style*="height:100%"] {
+    padding-top: 45px !important;
+    padding-left: 0 !important;
+  }
+  /* FeaturedEssay section: reduce padding-bottom from 56px (split) / 60px
+   * (centered) to 45px so the bottom border sits exactly 45px below content. */
+  main > section:first-child {
+    padding-bottom: 45px !important;
+  }
+  /* MoreReadingSection: add 5px top padding to break margin-collapse with the
+   * first child's 40px margin-top, giving exactly 45px below SecondaryGrid's
+   * border (5px section padding + 40px child margin). */
+  main > section:nth-of-type(3) {
+    padding-top: 5px !important;
   }
 }
 

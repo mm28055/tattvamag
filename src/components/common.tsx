@@ -2,6 +2,7 @@
 // Shared tiny components: Ornament, Tags, ByLine, truncate helper.
 import Link from "next/link";
 import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 export function truncate(text: string | undefined, n: number): string {
@@ -63,7 +64,10 @@ export function Tags({
   );
 }
 
-/** Tag used as an anchor link — navigates to archive with the tag pre-selected. */
+/** Tag used as an anchor link — navigates to archive with the tag pre-selected.
+ * Rendered as <span role="link"> (not <a>) because this component is typically
+ * placed inside an outer <Link>-wrapped card, and nested <a> is invalid HTML.
+ * Navigation happens via router.push so SPA transitions still work. */
 export function TagAsLink({
   tags,
   muted,
@@ -75,6 +79,7 @@ export function TagAsLink({
   tab?: "essays" | "notebook";
   max?: number;
 }) {
+  const router = useRouter();
   const base: React.CSSProperties = {
     fontFamily: "'DM Sans', sans-serif",
     fontSize: "10px",
@@ -86,20 +91,26 @@ export function TagAsLink({
   const shown = tags.slice(0, max);
   return (
     <span style={base}>
-      {shown.map((t, i) => (
-        <React.Fragment key={t}>
-          {i > 0 && <span style={{ color: "#d4cdc2", margin: "0 8px" }}>·</span>}
-          <Link
-            href={`/archive?tab=${tab}&tag=${encodeURIComponent(t)}` as Route}
-            onClick={(e) => e.stopPropagation()}
-            style={{ cursor: "pointer", color: muted, textDecoration: "none", transition: "opacity 0.15s" }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.65"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-          >
-            {t}
-          </Link>
-        </React.Fragment>
-      ))}
+      {shown.map((t, i) => {
+        const href = `/archive?tab=${tab}&tag=${encodeURIComponent(t)}`;
+        return (
+          <React.Fragment key={t}>
+            {i > 0 && <span style={{ color: "#d4cdc2", margin: "0 8px" }}>·</span>}
+            <span
+              role="link"
+              tabIndex={0}
+              data-href={href}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); router.push(href as Route); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(href as Route); } }}
+              style={{ cursor: "pointer", color: muted, textDecoration: "none", transition: "opacity 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.65"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+            >
+              {t}
+            </span>
+          </React.Fragment>
+        );
+      })}
     </span>
   );
 }

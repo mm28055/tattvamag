@@ -197,9 +197,12 @@ type Props = {
   value: string;
   onChange: (html: string) => void;
   onUploadImage?: (file: File) => Promise<string | null>;
+  onSave?: () => void;
+  saving?: boolean;
+  saveLabel?: string;
 };
 
-export default function RichEditor({ value, onChange, onUploadImage }: Props) {
+export default function RichEditor({ value, onChange, onUploadImage, onSave, saving, saveLabel }: Props) {
   const initialRef = useRef(value);
   const editor = useEditor({
     extensions: [
@@ -248,7 +251,7 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
 
   return (
     <div style={editorShellStyle}>
-      <Toolbar editor={editor} onUploadImage={onUploadImage} />
+      <Toolbar editor={editor} onUploadImage={onUploadImage} onSave={onSave} saving={saving} saveLabel={saveLabel} />
       <EditorContent editor={editor} className="tm-rich-editor" />
       <style>{`
         .tm-rich-editor .ProseMirror {
@@ -293,8 +296,9 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
           font-size: 24px;
           line-height: 1.4;
           font-weight: 400;
-          margin: 0;
+          margin: 0 0 12px;
         }
+        .tm-rich-editor .ProseMirror blockquote p:last-child { margin-bottom: 0; }
         .tm-rich-editor .ProseMirror ul, .tm-rich-editor .ProseMirror ol { padding-left: 26px; margin: 0 0 14px; }
         .tm-rich-editor .ProseMirror img {
           max-width: 100%;
@@ -605,7 +609,7 @@ function FootnotePopover({
   );
 }
 
-function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (file: File) => Promise<string | null> }) {
+function Toolbar({ editor, onUploadImage, onSave, saving, saveLabel }: { editor: Editor; onUploadImage?: (file: File) => Promise<string | null>; onSave?: () => void; saving?: boolean; saveLabel?: string }) {
   const [footnotePopover, setFootnotePopover] = useState<
     | { mode: "insert"; initial: "" }
     | { mode: "edit"; initial: string }
@@ -774,6 +778,33 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
       <Sep />
       <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo">↶</Btn>
       <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo">↷</Btn>
+      {onSave && (
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={onSave}
+          disabled={saving}
+          title={saveLabel || "Save"}
+          style={{
+            marginLeft: "auto",
+            padding: "0 14px",
+            height: "30px",
+            background: "#1a1714",
+            color: "#FAF5E8",
+            border: "none",
+            borderRadius: "3px",
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: "11px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            fontWeight: 600,
+            cursor: saving ? "not-allowed" : "pointer",
+            opacity: saving ? 0.7 : 1,
+          }}
+        >
+          {saving ? "…" : (saveLabel || "Save")}
+        </button>
+      )}
       {footnotePopover && (
         <FootnotePopover
           mode={footnotePopover.mode}

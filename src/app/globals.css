@@ -41,7 +41,11 @@ button { font-family: inherit; }
   [style*="gridTemplateColumns: 1fr 1fr 1fr"],
   [style*="gridTemplateColumns:1fr 1fr 1fr"] {
     grid-template-columns: 1fr !important;
-    gap: 48px !important;
+    /* Gap is 0 so the border-bottom divider between stacked cards sits
+     * symmetric between the previous card's content and the next. The
+     * card padding (30px top/bottom) now provides all the breathing
+     * room around the divider rule. */
+    gap: 0 !important;
   }
   .tm-footer-grid {
     grid-template-columns: 1fr !important;

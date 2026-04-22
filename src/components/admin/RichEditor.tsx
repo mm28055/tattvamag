@@ -361,8 +361,251 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
   );
 }
 
+// Encode a note string (asterisk-italic markers) into HTML suitable for a
+// contenteditable field — escape HTML-special chars, then turn *word* into
+// <em>word</em>.
+function noteToContentEditableHtml(note: string): string {
+  return note
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
+}
+
+// Round-trip: take contenteditable HTML from the footnote popover and reduce
+// it to a plain string with *word* italic markers. Only <em>/<i> survive as
+// asterisks — everything else is stripped. This matches the reader's
+// renderInline() which already turns *word* into <em>word</em>.
+function contentEditableHtmlToNote(html: string): string {
+  return html
+    .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, (_m, _tag, inner) =>
+      `*${inner.replace(/<[^>]+>/g, "")}*`,
+    )
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/p>\s*<p[^>]*>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function FootnotePopover({
+  initialNote,
+  mode,
+  onSave,
+  onCancel,
+  onDelete,
+}: {
+  initialNote: string;
+  mode: "insert" | "edit";
+  onSave: (note: string) => void;
+  onCancel: () => void;
+  onDelete?: () => void;
+}) {
+  const editableRef = useRef<HTMLDivElement>(null);
+  const [italicActive, setItalicActive] = useState(false);
+
+  useEffect(() => {
+    const el = editableRef.current;
+    if (!el) return;
+    el.innerHTML = noteToContentEditableHtml(initialNote || "");
+    // Move caret to the end
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    el.focus();
+  }, [initialNote]);
+
+  // Track whether the current selection is inside an <em> so the Italic
+  // button can show an active state.
+  useEffect(() => {
+    const update = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const node = sel.anchorNode;
+      if (!node) return;
+      let el: Node | null = node;
+      while (el && el !== editableRef.current) {
+        if (el.nodeType === 1) {
+          const tag = (el as HTMLElement).tagName.toLowerCase();
+          if (tag === "em" || tag === "i") {
+            setItalicActive(true);
+            return;
+          }
+        }
+        el = (el as Node).parentNode;
+      }
+      setItalicActive(false);
+    };
+    document.addEventListener("selectionchange", update);
+    return () => document.removeEventListener("selectionchange", update);
+  }, []);
+
+  const toggleItalic = () => {
+    editableRef.current?.focus();
+    document.execCommand("italic");
+  };
+
+  const commit = () => {
+    const html = editableRef.current?.innerHTML || "";
+    const note = contentEditableHtmlToNote(html);
+    if (!note) {
+      // Empty note → cancel on insert, delete on edit.
+      if (mode === "edit" && onDelete) onDelete();
+      else onCancel();
+      return;
+    }
+    onSave(note);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      commit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      onCancel();
+    } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i") {
+      e.preventDefault();
+      toggleItalic();
+    }
+  };
+
+  return (
+    <div style={footnotePopoverOverlayStyle} onClick={onCancel}>
+      <div style={footnotePopoverStyle} onClick={(e) => e.stopPropagation()}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", color: "#5a5048", fontWeight: 600, marginBottom: "8px" }}>
+          {mode === "insert" ? "New footnote" : "Edit footnote"}
+        </div>
+        <div style={{ display: "flex", gap: "2px", marginBottom: "8px", alignItems: "center" }}>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggleItalic}
+            title="Italic (Ctrl+I)"
+            style={{
+              minWidth: "30px",
+              height: "28px",
+              padding: "0 10px",
+              background: italicActive ? "#1a1714" : "transparent",
+              color: italicActive ? "#FAF5E8" : "#3a3530",
+              border: "1px solid #d4cdc2",
+              borderRadius: "3px",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "13px",
+              cursor: "pointer",
+            }}
+          >
+            <em>I</em>
+          </button>
+          <span style={{ fontFamily: "'Source Serif 4', serif", fontSize: "12px", color: "#8b7f72", fontStyle: "italic", marginLeft: "8px" }}>
+            Select words and click I to italicize
+          </span>
+        </div>
+        <div
+          ref={editableRef}
+          contentEditable
+          suppressContentEditableWarning
+          onKeyDown={onKeyDown}
+          style={{
+            minHeight: "90px",
+            maxHeight: "260px",
+            overflow: "auto",
+            padding: "12px 14px",
+            border: "1px solid #d4cdc2",
+            borderRadius: "3px",
+            background: "#fff",
+            fontFamily: "'Source Serif 4', Georgia, serif",
+            fontSize: "15px",
+            lineHeight: 1.6,
+            color: "#1a1714",
+            outline: "none",
+          }}
+        />
+        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "12px", alignItems: "center" }}>
+          {mode === "edit" && onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              style={{
+                padding: "8px 14px",
+                background: "transparent",
+                color: "#B83A14",
+                border: "1px solid #B83A14",
+                borderRadius: "2px",
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "11px",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                fontWeight: 600,
+                cursor: "pointer",
+                marginRight: "auto",
+              }}
+            >
+              Delete
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              padding: "8px 14px",
+              background: "transparent",
+              color: "#6b6259",
+              border: "1px solid #d4cdc2",
+              borderRadius: "2px",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "11px",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={commit}
+            style={{
+              padding: "8px 14px",
+              background: "#1a1714",
+              color: "#FAF5E8",
+              border: "none",
+              borderRadius: "2px",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "11px",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (file: File) => Promise<string | null> }) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const [footnotePopover, setFootnotePopover] = useState<
+    | { mode: "insert"; initial: "" }
+    | { mode: "edit"; initial: string }
+    | null
+  >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, forceRender] = useState({});
   // Re-render toolbar state (active marks, etc.) when selection changes.
@@ -424,34 +667,43 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
   };
 
   const insertFootnote = () => {
-    const note = window.prompt("Footnote text", "");
-    if (note === null || !note.trim()) return;
+    setFootnotePopover({ mode: "insert", initial: "" });
+  };
+
+  const editFootnote = () => {
+    const attrs = editor.getAttributes("footnoteRef");
+    const currentNote = (attrs.dataNote as string) || "";
+    setFootnotePopover({ mode: "edit", initial: currentNote });
+  };
+
+  const commitInsertFootnote = (note: string) => {
     // Pick the next ref number by scanning what's currently in the doc. We
     // let the server renumber sequentially on save, so this is just a
     // stable temporary id.
     const html = editor.getHTML();
-    const existing = [...html.matchAll(/data-ref="([^"]+)"/g)].map((m) => parseInt(m[1], 10)).filter((n) => !Number.isNaN(n));
+    const existing = [...html.matchAll(/data-ref="([^"]+)"/g)]
+      .map((m) => parseInt(m[1], 10))
+      .filter((n) => !Number.isNaN(n));
     const next = existing.length > 0 ? Math.max(...existing) + 1 : 1;
     editor
       .chain()
       .focus()
       .insertContent({
         type: "footnoteRef",
-        attrs: { dataRef: String(next), dataNote: note.trim() },
+        attrs: { dataRef: String(next), dataNote: note },
       })
       .run();
+    setFootnotePopover(null);
   };
 
-  const editFootnote = () => {
-    const attrs = editor.getAttributes("footnoteRef");
-    const currentNote = (attrs.dataNote as string) || "";
-    const note = window.prompt("Edit footnote text (clear to delete)", currentNote);
-    if (note === null) return;
-    if (note.trim() === "") {
-      editor.chain().focus().deleteSelection().run();
-      return;
-    }
-    editor.chain().focus().updateAttributes("footnoteRef", { dataNote: note.trim() }).run();
+  const commitEditFootnote = (note: string) => {
+    editor.chain().focus().updateAttributes("footnoteRef", { dataNote: note }).run();
+    setFootnotePopover(null);
+  };
+
+  const deleteFootnote = () => {
+    editor.chain().focus().deleteSelection().run();
+    setFootnotePopover(null);
   };
 
   const imageSelected = editor.isActive("image");
@@ -541,6 +793,18 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
       <Sep />
       <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo">↶</Btn>
       <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo">↷</Btn>
+      {footnotePopover && (
+        <FootnotePopover
+          mode={footnotePopover.mode}
+          initialNote={footnotePopover.initial}
+          onSave={(note) => {
+            if (footnotePopover.mode === "insert") commitInsertFootnote(note);
+            else commitEditFootnote(note);
+          }}
+          onCancel={() => setFootnotePopover(null)}
+          onDelete={footnotePopover.mode === "edit" ? deleteFootnote : undefined}
+        />
+      )}
     </div>
   );
 }
@@ -605,9 +869,11 @@ const toolbarStyle: React.CSSProperties = {
   // Pin the toolbar to the top of the viewport while the user scrolls
   // through a long body. It unsticks automatically once the editor shell
   // scrolls past, so it only hovers while you're inside the body field.
+  // z-index must exceed the SiteHeader's fixed compact bar (z-index 90)
+  // so the toolbar isn't hidden behind it on admin pages.
   position: "sticky",
   top: 0,
-  zIndex: 10,
+  zIndex: 100,
   boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 4px 8px -6px rgba(0,0,0,0.15)",
 };
 
@@ -623,4 +889,24 @@ const swatchPanelStyle: React.CSSProperties = {
   border: "1px solid #d4cdc2",
   borderRadius: "2px",
   boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+};
+
+const footnotePopoverOverlayStyle: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(26, 23, 20, 0.35)",
+  zIndex: 1000,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "24px",
+};
+
+const footnotePopoverStyle: React.CSSProperties = {
+  width: "min(560px, 100%)",
+  background: "#faf5e8",
+  border: "1px solid #d4cdc2",
+  borderRadius: "4px",
+  padding: "18px 20px 16px",
+  boxShadow: "0 12px 40px rgba(0, 0, 0, 0.18)",
 };

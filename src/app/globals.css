@@ -47,7 +47,12 @@ button { font-family: inherit; }
     grid-template-columns: 1fr !important;
     gap: 40px !important;
   }
-  [aria-hidden="true"][style*="visibility: hidden"] { display: none !important; }
+  /* Hide inline-styled visibility:hidden placeholders on mobile (e.g. the
+   * invisible tag row kept for vertical alignment in the FeaturedEssay
+   * right column). Match both the spaced and un-spaced serializations
+   * Next.js emits for inline styles. */
+  [aria-hidden="true"][style*="visibility: hidden"],
+  [aria-hidden="true"][style*="visibility:hidden"] { display: none !important; }
   .tm-notebook-divider-v { display: none !important; }
   h1 { font-size: 40px !important; }
   h2 { font-size: 34px !important; }
@@ -87,16 +92,24 @@ button { font-family: inherit; }
   .tm-margin-note-col { display: none !important; }
 
   /* ── Home: SecondaryCard has asymmetric padding for desktop dividers;
-   * reset to symmetric edge-padding on mobile once the grid has stacked. ── */
+   * reset to symmetric edge-padding on mobile once the grid has stacked.
+   * Also give each stacked card a bottom rule (matching the MoreReading
+   * ColumnA style) so successive cards are visibly separated and spacing
+   * matches the rest of the homepage. ── */
   [style*="grid-template-columns: 1fr 1fr 1fr"] > article,
   [style*="grid-template-columns:1fr 1fr 1fr"] > article,
   [style*="gridTemplateColumns: 1fr 1fr 1fr"] > article,
   [style*="gridTemplateColumns:1fr 1fr 1fr"] > article {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding: 30px 0 !important;
     border-right: none !important;
   }
-  /* Notebook preview cards (2-col grid on desktop) — same reset. */
+  [style*="grid-template-columns: 1fr 1fr 1fr"] > article:not(:last-child),
+  [style*="grid-template-columns:1fr 1fr 1fr"] > article:not(:last-child),
+  [style*="gridTemplateColumns: 1fr 1fr 1fr"] > article:not(:last-child),
+  [style*="gridTemplateColumns:1fr 1fr 1fr"] > article:not(:last-child) {
+    border-bottom: 1px solid #e2ddd5 !important;
+  }
+  /* Notebook preview cards (2-col grid on desktop) — same reset + rule. */
   [style*="grid-template-columns: 1fr 1fr"] > article,
   [style*="grid-template-columns:1fr 1fr"] > article,
   [style*="gridTemplateColumns: 1fr 1fr"] > article,
@@ -105,11 +118,14 @@ button { font-family: inherit; }
     padding-right: 0 !important;
     border-right: none !important;
   }
-  /* More Reading columns use nested 1fr 1fr, which stacks — kill the
-   * column divider that was between the A and B columns. */
+  /* More Reading columns use nested 1fr 1fr, which stacks — convert the
+   * desktop column divider (border-right on Column A) into a horizontal
+   * rule so there's a visible line between Column A (articles 5, 6) and
+   * Column B (article 7) when stacked. */
   [style*="grid-template-columns: 1fr 1fr"] > div[style*="border-right"],
   [style*="grid-template-columns:1fr 1fr"] > div[style*="border-right"] {
     border-right: none !important;
+    border-bottom: 1px solid #e2ddd5 !important;
   }
 }
 

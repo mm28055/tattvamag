@@ -95,6 +95,16 @@ button { font-family: inherit; }
    * and can break layout or cause horizontal scroll. Hide it outright. */
   .tm-margin-note-col { display: none !important; }
 
+  /* Correspondence header: on narrow viewports the kicker + "Letters" +
+   * "Write →" combined overflow the row, pushing Write onto a second
+   * line. Tighten letter-spacing, shrink "Letters", and force the row
+   * to stay single-line so everything sits together. */
+  .tm-corr-row { flex-wrap: nowrap !important; gap: 10px !important; }
+  .tm-corr-labels { gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; }
+  .tm-corr-kicker { letter-spacing: 0.12em !important; font-size: 10px !important; }
+  .tm-corr-title { font-size: 18px !important; }
+  .tm-corr-write { font-size: 11px !important; letter-spacing: 0.08em !important; white-space: nowrap; }
+
   /* ── Home: SecondaryCard has asymmetric padding for desktop dividers;
    * reset to symmetric edge-padding on mobile once the grid has stacked.
    * Also give each stacked card a bottom rule (matching the MoreReading

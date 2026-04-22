@@ -46,9 +46,10 @@ export default function CommentsClient({ slug, accent, measure = 780 }: { slug: 
        * Content inside gets an extra 32px indent for the end-of-essay
        * coda look — matching the Notes section. */}
       <div style={{ borderTop: "1px solid #d8d2c8", paddingTop: "40px", paddingLeft: "32px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "16px" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "14px", flexWrap: "wrap" }}>
+      <div className="tm-corr-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "16px" }}>
+        <div className="tm-corr-labels" style={{ display: "flex", alignItems: "baseline", gap: "14px", flexWrap: "wrap" }}>
           <span
+            className="tm-corr-kicker"
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: "11px",
@@ -61,12 +62,13 @@ export default function CommentsClient({ slug, accent, measure = 780 }: { slug: 
             Correspondence
           </span>
           <span style={{ color: "#b0a89e", fontFamily: "'Cormorant Garamond', serif", fontSize: "18px", lineHeight: 1 }}>·</span>
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontStyle: "italic", fontWeight: 500, color: "#1a1714" }}>
+          <span className="tm-corr-title" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontStyle: "italic", fontWeight: 500, color: "#1a1714" }}>
             Letters
           </span>
         </div>
         <button
           onClick={() => setModalOpen(true)}
+          className="tm-corr-write"
           style={{
             background: "transparent",
             border: "none",

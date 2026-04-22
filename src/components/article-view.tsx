@@ -766,10 +766,10 @@ function ShareAndBio({
       style={{
         maxWidth: `${measure}px`,
         margin: "32px auto 0",
-        padding: "0 40px 0 72px",
+        padding: "0 40px",
       }}
     >
-      <div style={{ display: "flex", gap: "14px", marginBottom: "28px" }}>
+      <div style={{ paddingLeft: "32px", display: "flex", gap: "14px", marginBottom: "28px" }}>
         {targets.map((t) => (
           <a
             key={t.name}

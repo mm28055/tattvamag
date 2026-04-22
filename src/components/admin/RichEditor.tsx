@@ -434,7 +434,9 @@ function FootnotePopover({
       if (!sel || sel.rangeCount === 0) return;
       const node = sel.anchorNode;
       if (!node) return;
-      let el: Node | null = node;
+      // `Node` is shadowed by the TipTap Node import at the top of the
+      // file, so use the global DOM interface explicitly here.
+      let el: globalThis.Node | null = node;
       while (el && el !== editableRef.current) {
         if (el.nodeType === 1) {
           const tag = (el as HTMLElement).tagName.toLowerCase();
@@ -443,7 +445,7 @@ function FootnotePopover({
             return;
           }
         }
-        el = (el as Node).parentNode;
+        el = (el as globalThis.Node).parentNode;
       }
       setItalicActive(false);
     };

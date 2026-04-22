@@ -193,14 +193,6 @@ const CaptionedImage = ImageExt.extend({
   },
 });
 
-const COLOR_SWATCHES = [
-  { name: "default", value: null },
-  { name: "red", value: "#B83A14" },
-  { name: "green", value: "#4a5e3a" },
-  { name: "blue", value: "#2c4a6b" },
-  { name: "muted", value: "#6b6259" },
-];
-
 type Props = {
   value: string;
   onChange: (html: string) => void;
@@ -284,12 +276,24 @@ export default function RichEditor({ value, onChange, onUploadImage }: Props) {
           color: #1a1714;
           margin: 22px 0 10px;
         }
+        /* Blockquote renders as a pullquote on the reader — mirror that here
+         * so the editor is WYSIWYG: centred text, larger italic serif,
+         * cinnabar rules top and bottom. */
         .tm-rich-editor .ProseMirror blockquote {
-          border-left: 3px solid #B83A14;
-          margin: 18px 0;
-          padding: 2px 0 2px 16px;
-          color: #3a332c;
+          margin: 36px 0;
+          padding: 28px 0;
+          border-top: 1px solid #B83A14;
+          border-bottom: 1px solid #B83A14;
+          text-align: center;
+          color: #2a2520;
+        }
+        .tm-rich-editor .ProseMirror blockquote p {
+          font-family: 'Cormorant Garamond', serif;
           font-style: italic;
+          font-size: 24px;
+          line-height: 1.4;
+          font-weight: 400;
+          margin: 0;
         }
         .tm-rich-editor .ProseMirror ul, .tm-rich-editor .ProseMirror ol { padding-left: 26px; margin: 0 0 14px; }
         .tm-rich-editor .ProseMirror img {
@@ -602,7 +606,6 @@ function FootnotePopover({
 }
 
 function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (file: File) => Promise<string | null> }) {
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [footnotePopover, setFootnotePopover] = useState<
     | { mode: "insert"; initial: "" }
     | { mode: "edit"; initial: string }
@@ -660,12 +663,6 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
     const alt = window.prompt("Alt text for this image (optional)", "") || "";
     const caption = window.prompt("Caption for this image (optional, shown below the image)", "") || "";
     editor.chain().focus().insertContent({ type: "image", attrs: { src, alt, caption: caption || null } }).run();
-  };
-
-  const setColor = (color: string | null) => {
-    if (color === null) editor.chain().focus().unsetColor().run();
-    else editor.chain().focus().setColor(color).run();
-    setColorPickerOpen(false);
   };
 
   const insertFootnote = () => {
@@ -730,9 +727,6 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
         H3
       </Btn>
       <Sep />
-      <Btn active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Quote">
-        &ldquo; &rdquo;
-      </Btn>
       <Btn active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet list">
         •
       </Btn>
@@ -766,32 +760,17 @@ function Toolbar({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
         <Btn onClick={editFootnote} title="Edit or delete the selected footnote">Edit footnote…</Btn>
       )}
       <Sep />
-      <div style={{ position: "relative" }}>
-        <Btn onClick={() => setColorPickerOpen((v) => !v)} title="Text colour" active={colorPickerOpen}>
-          A
-          <span style={{ display: "inline-block", width: "14px", height: "3px", background: (editor.getAttributes("textStyle").color as string) || "#1a1714", marginLeft: "4px", verticalAlign: "middle" }} />
-        </Btn>
-        {colorPickerOpen && (
-          <div style={swatchPanelStyle}>
-            {COLOR_SWATCHES.map((s) => (
-              <button
-                key={s.name}
-                type="button"
-                onClick={() => setColor(s.value)}
-                title={s.name}
-                style={{
-                  width: "26px",
-                  height: "26px",
-                  borderRadius: "50%",
-                  background: s.value || "transparent",
-                  border: s.value ? "1px solid #0002" : "1px dashed #8b7f72",
-                  cursor: "pointer",
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      <Btn
+        active={editor.isActive("blockquote")}
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        title="Pullquote — centre text between cinnabar rules"
+      >
+        <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "2px", lineHeight: 1 }}>
+          <span style={{ width: "14px", height: "2px", background: "#B83A14" }} />
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "13px", fontWeight: 500 }}>PQ</span>
+          <span style={{ width: "14px", height: "2px", background: "#B83A14" }} />
+        </span>
+      </Btn>
       <Sep />
       <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo">↶</Btn>
       <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo">↷</Btn>
@@ -879,19 +858,6 @@ const toolbarStyle: React.CSSProperties = {
   boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 4px 8px -6px rgba(0,0,0,0.15)",
 };
 
-const swatchPanelStyle: React.CSSProperties = {
-  position: "absolute",
-  top: "34px",
-  left: 0,
-  zIndex: 10,
-  display: "flex",
-  gap: "6px",
-  padding: "8px",
-  background: "#fff",
-  border: "1px solid #d4cdc2",
-  borderRadius: "2px",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-};
 
 const footnotePopoverOverlayStyle: React.CSSProperties = {
   position: "fixed",

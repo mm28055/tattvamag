@@ -192,8 +192,15 @@ button { font-family: inherit; }
   }
   /* Epigraph on mobile: each sentence on its own line so long quotes
    * don't leave single-word orphans wrapped on the next line. Desktop
-   * keeps sentences flowing together inline. */
+   * keeps sentences flowing together inline. Also drop the stanza-break
+   * spacer (the empty-line div inside .tm-quote-body with a 14px height)
+   * — with each sentence on its own line the rhythm is already clear,
+   * the extra 14px just creates dead space. */
   .tm-quote-sentence { display: block; }
+  .tm-quote-body > div[style*="height: 14px"],
+  .tm-quote-body > div[style*="height:14px"] {
+    display: none !important;
+  }
 }
 
 @media (max-width: 520px) {

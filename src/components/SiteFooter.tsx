@@ -36,7 +36,7 @@ export default function SiteFooter() {
               maxWidth: "320px",
             }}
           >
-            An intellectual notebook on Indian textual traditions, philosophy, and the survival of inherited meaning under modernity.
+            An intellectual notebook on Hindu textual traditions, philosophy, and the survival of inherited meaning under modernity.
           </p>
         </div>
 

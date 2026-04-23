@@ -9,7 +9,7 @@ export const revalidate = 600; // Rebuild every 10 min; cheap relative to articl
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.tattva.in").replace(/\/$/, "");
 const SITE_TITLE = "Tattva — Dharma Text Inheritance";
 const SITE_DESCRIPTION =
-  "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse — by Manish Maheshwari.";
+  "Essays and notes on Hindu textual traditions, philosophy, history, and colonial discourse — by Manish Maheshwari.";
 
 function esc(s: string): string {
   return s

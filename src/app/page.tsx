@@ -20,13 +20,13 @@ export const metadata: Metadata = {
   // than prefixing it; the homepage is the canonical landing page for the brand.
   title: { absolute: "Tattva — Dharma Text Inheritance" },
   description:
-    "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+    "Essays and notes on Hindu textual traditions, philosophy, history, and colonial discourse.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     title: "Tattva — Dharma Text Inheritance",
     description:
-      "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+      "Essays and notes on Hindu textual traditions, philosophy, history, and colonial discourse.",
     url: "/",
     siteName: "Tattva",
     locale: "en_US",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Tattva — Dharma Text Inheritance",
     description:
-      "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+      "Essays and notes on Hindu textual traditions, philosophy, history, and colonial discourse.",
     images: ["/og-image.jpg"],
   },
 };

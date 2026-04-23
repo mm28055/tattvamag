@@ -11,7 +11,7 @@ export type AboutContent = {
 
 export const DEFAULT_ABOUT: AboutContent = {
   intro:
-    "Tattva is the intellectual notebook of Manish Maheshwari. It covers Indian textual traditions, philosophy, history, colonial discourse, and the question of how inherited sources of meaning survive under modernity.",
+    "Tattva is the intellectual notebook of Manish Maheshwari. It covers Hindu textual traditions, philosophy, history, colonial discourse, and the question of how inherited sources of meaning survive under modernity.",
   bio:
     "Manish is the founder of the Tattva Heritage Foundation and the Centre for Shaiva Studies, Pondicherry.",
   closing: "This site is updated periodically.",

@@ -10,7 +10,7 @@ INSERT INTO site_settings (key, value)
 VALUES (
   'about',
   '{
-    "intro": "Tattva is the intellectual notebook of Manish Maheshwari. It covers Indian textual traditions, philosophy, history, colonial discourse, and the question of how inherited sources of meaning survive under modernity.",
+    "intro": "Tattva is the intellectual notebook of Manish Maheshwari. It covers Hindu textual traditions, philosophy, history, colonial discourse, and the question of how inherited sources of meaning survive under modernity.",
     "bio": "Manish is the founder of the Tattva Heritage Foundation and the Centre for Shaiva Studies, Pondicherry. He publishes under the Karṇāṭa imprint and is based in Mysore.",
     "closing": "This site is updated periodically."
   }'::jsonb

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: "Tattva — Dharma Text Inheritance", template: "%s | Tattva" },
   description:
-    "Tattva is the intellectual notebook of Manish Maheshwari — essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+    "Tattva is the intellectual notebook of Manish Maheshwari — essays and notes on Hindu textual traditions, philosophy, history, and colonial discourse.",
   keywords: [
     "Indian philosophy",
     "dharma",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     "Sanskrit",
     "Hindu philosophy",
     "Navya-Nyaya",
-    "Indian textual traditions",
+    "Hindu textual traditions",
     "Tattva",
   ],
   authors: [{ name: "Manish Maheshwari" }],
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: "Tattva",
     title: "Tattva — Dharma Text Inheritance",
     description:
-      "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+      "Essays and notes on Hindu textual traditions, philosophy, history, and colonial discourse.",
     url: SITE_URL,
     images: [
       {
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Tattva — Dharma Text Inheritance",
     description:
-      "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
+      "Essays and notes on Hindu textual traditions, philosophy, history, and colonial discourse.",
     images: ["/og-image.jpg"],
   },
   robots: {

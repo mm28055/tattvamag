@@ -2,7 +2,7 @@
 // out of the admin area. Next.js auto-exposes this at /robots.txt.
 import type { MetadataRoute } from "next";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://tattva.in").replace(/\/$/, "");
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.tattva.in").replace(/\/$/, "");
 
 export default function robots(): MetadataRoute.Robots {
   return {

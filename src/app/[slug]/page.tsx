@@ -4,7 +4,7 @@ import { getFrontendArticles, getFrontendArticleBySlug } from "@/lib/frontend-da
 import { SITE } from "@/lib/site-config";
 import ArticleView from "@/components/article-view";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://tattva.in").replace(/\/$/, "");
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.tattva.in").replace(/\/$/, "");
 
 export async function generateStaticParams() {
   const all = await getFrontendArticles();

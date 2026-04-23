@@ -21,7 +21,7 @@ export default function CommentsClient({ slug, accent, measure = 780 }: { slug: 
       .catch(() => setLoaded(true));
   }, [slug]);
 
-  const submit = async (payload: { name: string; body: string }) => {
+  const submit = async (payload: { name: string; email: string; body: string }) => {
     const res = await fetch(`/api/comments/${slug}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -155,10 +155,11 @@ function LetterModal({
 }: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (p: { name: string; body: string }) => Promise<boolean>;
+  onSubmit: (p: { name: string; email: string; body: string }) => Promise<boolean>;
   accent: string;
 }) {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [body, setBody] = useState("");
   const [captcha, setCaptcha] = useState({ a: 2, b: 3, sum: 5 });
   const [captchaAns, setCaptchaAns] = useState("");
@@ -190,7 +191,7 @@ function LetterModal({
     if (body.trim().length < 20) return setErr("A letter should be at least a sentence or two.");
     if (parseInt(captchaAns, 10) !== captcha.sum) return setErr("The arithmetic didn't add up — please try again.");
     setSubmitting(true);
-    const ok = await onSubmit({ name: name.trim(), body: body.trim() });
+    const ok = await onSubmit({ name: name.trim(), email: email.trim(), body: body.trim() });
     setSubmitting(false);
     if (!ok) setErr("Could not submit. Try again in a moment.");
   };
@@ -264,6 +265,10 @@ function LetterModal({
 
         <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "14px" }}>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" style={inputStyle} />
+          <div>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" type="email" style={inputStyle} />
+            <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "12px", color: "#9e958a", margin: "4px 0 0 2px" }}>Your email will not be displayed.</p>
+          </div>
           <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Your letter…" rows={6} style={{ ...inputStyle, lineHeight: 1.6, resize: "vertical" }} />
           <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
             <label style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14px", color: "#3a3530", flex: 1 }}>

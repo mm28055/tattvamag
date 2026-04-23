@@ -7,7 +7,7 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.tattva.in").r
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "Tattva — Celebrating Dharma", template: "%s | Tattva" },
+  title: { default: "Tattva — Dharma Texts Inheritance", template: "%s | Tattva" },
   description:
     "Tattva is the intellectual notebook of Manish Maheshwari — essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
   keywords: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Tattva",
-    title: "Tattva — Celebrating Dharma",
+    title: "Tattva — Dharma Texts Inheritance",
     description:
       "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
     url: SITE_URL,
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tattva — Celebrating Dharma",
+    title: "Tattva — Dharma Texts Inheritance",
     description:
       "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
     images: ["/og-image.jpg"],
@@ -102,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link
           rel="alternate"
           type="application/rss+xml"
-          title="Tattva — Celebrating Dharma"
+          title="Tattva — Dharma Texts Inheritance"
           href="/rss.xml"
         />
         {/* Font Awesome — used for the social share icons at the end of articles */}

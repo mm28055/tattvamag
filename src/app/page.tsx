@@ -16,15 +16,15 @@ import type { FrontendArticle } from "@/lib/frontend-types";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  // Use the root-layout default title ("Tattva — Dharma Texts Inheritance") rather
+  // Use the root-layout default title ("Tattva — Dharma Text Inheritance") rather
   // than prefixing it; the homepage is the canonical landing page for the brand.
-  title: { absolute: "Tattva — Dharma Texts Inheritance" },
+  title: { absolute: "Tattva — Dharma Text Inheritance" },
   description:
     "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    title: "Tattva — Dharma Texts Inheritance",
+    title: "Tattva — Dharma Text Inheritance",
     description:
       "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
     url: "/",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tattva — Dharma Texts Inheritance",
+    title: "Tattva — Dharma Text Inheritance",
     description:
       "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse.",
     images: ["/og-image.jpg"],

@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const revalidate = 600; // Rebuild every 10 min; cheap relative to article cadence.
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.tattva.in").replace(/\/$/, "");
-const SITE_TITLE = "Tattva — Dharma Texts Inheritance";
+const SITE_TITLE = "Tattva — Dharma Text Inheritance";
 const SITE_DESCRIPTION =
   "Essays and notes on Indian textual traditions, philosophy, history, and colonial discourse — by Manish Maheshwari.";
 

@@ -280,7 +280,7 @@ function ColumnACard({ article, accent, tagMuted, isFirst }: { article: Frontend
         )}
         <Ornament accent={accent} margin="18px 0 0" />
         <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14.5px", lineHeight: 1.7, color: "#3a3530", marginTop: "12px" }}>
-          {truncate(article.body, 200)}
+          {truncate(article.body, 280)}
         </p>
         <ByLine author={article.author} readTime={article.readTime} />
       </Link>

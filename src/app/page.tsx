@@ -1,14 +1,12 @@
 // Homepage: featured + secondary grid + more reading + epigraph + notebook preview.
 import type { Metadata } from "next";
 import { getFrontendArticles } from "@/lib/frontend-data";
-import { getAllNotebookEntriesAsync } from "@/lib/notebook-data";
 import { SITE, EPIGRAPH } from "@/lib/site-config";
 import {
   FeaturedEssay,
   SecondaryGrid,
   MoreReadingSection,
   QuoteSeparator,
-  NotebookSection,
 } from "@/components/home-sections";
 import { ShowMoreLink } from "@/components/common";
 import type { FrontendArticle } from "@/lib/frontend-types";
@@ -71,7 +69,6 @@ function arrangeSlots(articles: FrontendArticle[], slotCount: number): (Frontend
 
 export default async function HomePage() {
   const all = await getFrontendArticles();
-  const notebook = await getAllNotebookEntriesAsync();
 
   const [featured, s1, s2, s3, a1, a2, b] = arrangeSlots(all, 7);
   if (!featured) {
@@ -95,8 +92,6 @@ export default async function HomePage() {
       )}
       <ShowMoreLink label="Browse all essays" accent={SITE.accent} href="/archive?tab=essays" />
       <QuoteSeparator quote={EPIGRAPH} accent={SITE.accent} />
-      <NotebookSection entries={notebook} accent={SITE.accent} tagMuted={SITE.tagMuted} />
-      <ShowMoreLink label="All notebook entries" accent={SITE.accent} href="/notebook" />
     </main>
   );
 }

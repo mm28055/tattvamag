@@ -5,6 +5,11 @@ import { getAuthorBios } from "@/lib/author-bio";
 import { SITE } from "@/lib/site-config";
 import ArchiveView from "@/components/archive-view";
 
+// ISR: regenerate periodically so newly published articles appear without a
+// fresh deploy (matches the homepage). Without this the page is fully static
+// and freezes at build time.
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Archive",
   description: "All essays and reflections published on Tattva.",

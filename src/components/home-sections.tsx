@@ -420,7 +420,7 @@ export function ReflectionsSection({
           Views, arguments, and ideas
         </h2>
         <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "16px", lineHeight: 1.7, color: "#6b6259", marginTop: "18px", maxWidth: "520px", marginLeft: "auto", marginRight: "auto" }}>
-          Personal essays rather than reportage — opinions and arguments on culture, tradition, and heritage, distinct from the informative pieces.
+          Personal essays — opinions and arguments on culture, tradition, and heritage.
         </p>
         <div style={{ width: "60px", height: "1px", background: accent, opacity: 0.3, margin: "26px auto 0" }} />
       </header>

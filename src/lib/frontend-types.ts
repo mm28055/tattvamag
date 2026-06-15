@@ -24,6 +24,7 @@ export type FrontendArticle = {
   illustrationCredit?: string;
   fullBody?: Block[];    // block list used on the article page
   displayOrder?: number | null; // homepage slot (1-based), or null/undefined if unpinned
+  kind: "essay" | "reflection"; // essay (informative) vs reflection (personal views)
 };
 
 export type FrontendNotebookEntry = {

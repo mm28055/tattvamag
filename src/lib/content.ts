@@ -12,7 +12,7 @@ export type Footnote = { num: string; text: string; html: string };
 export type Article = {
   slug: string;
   id?: number;
-  type: "essay" | "note";
+  type: "essay" | "note" | "reflection";
   title: string;
   subtitle: string;
   metaDescription: string;
@@ -73,7 +73,7 @@ function rowToArticle(r: DbRow): Article {
   return {
     id: r.id,
     slug: r.slug,
-    type: (r.type === "note" ? "note" : "essay"),
+    type: (r.type === "note" ? "note" : r.type === "reflection" ? "reflection" : "essay"),
     title: r.title,
     subtitle: r.subtitle || "",
     metaDescription: r.meta_description || "",

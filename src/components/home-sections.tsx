@@ -395,6 +395,81 @@ export function QuoteSeparator({ quote, accent }: { quote: FrontendEpigraph; acc
   );
 }
 
+// ══ REFLECTIONS PREVIEW (home page) ══
+// Personal-voice pieces (kind === "reflection"), shown below the essays.
+// Each card links to the full article page (/[slug]) — same reader, comments
+// and all — so reflections behave exactly like essays, just in their own lane.
+export function ReflectionsSection({
+  articles,
+  accent,
+  tagMuted,
+}: {
+  articles: FrontendArticle[];
+  accent: string;
+  tagMuted: string;
+}) {
+  const shown = articles.slice(0, 4);
+  return (
+    <section style={{ paddingTop: "8px", paddingBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "40px", marginBottom: "18px" }}>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: 500, color: "#1a1714", fontStyle: "italic" }}>
+          Reflections
+        </div>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#b0a89e", fontWeight: 500 }}>
+          Views &amp; ideas
+        </div>
+      </div>
+      <div style={{ height: "1px", background: "#e2ddd5", marginBottom: "4px" }} />
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: "56px" }}>
+        {shown.map((article, i) => (
+          <ReflectionPreviewCard key={article.id} article={article} accent={accent} tagMuted={tagMuted} i={i} total={shown.length} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ReflectionPreviewCard({ article, accent, tagMuted, i, total }: { article: FrontendArticle; accent: string; tagMuted: string; i: number; total: number }) {
+  const [hover, setHover] = useState(false);
+  const isRight = i % 2 === 1;
+  return (
+    <article
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        padding: "26px 0",
+        paddingLeft: isRight ? "28px" : 0,
+        paddingRight: !isRight ? "28px" : 0,
+        borderRight: !isRight ? "1px solid #e8e4dc" : "none",
+        borderBottom: i < total - 2 ? "1px solid #e8e4dc" : "none",
+      }}
+    >
+      <Link href={`/${article.slug}` as Route} style={{ textDecoration: "none", color: "inherit", cursor: "pointer", display: "block" }}>
+        <Tags tags={article.tags} muted={tagMuted} />
+        <h4
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: "20px",
+            fontStyle: "italic",
+            lineHeight: 1.32,
+            color: hover ? accent : "#2c2520",
+            margin: "10px 0 0",
+            transition: "color 0.3s ease",
+            fontWeight: 500,
+          }}
+        >
+          {article.title}
+        </h4>
+        <Ornament accent={accent} margin="14px 0 0" />
+        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "14px", lineHeight: 1.7, color: "#6b6259", marginTop: "10px", marginBottom: 0 }}>
+          {truncate(article.body, 240)}
+        </p>
+      </Link>
+    </article>
+  );
+}
+
 // ══ NOTEBOOK PREVIEW (home page) ══
 export function NotebookSection({
   entries,

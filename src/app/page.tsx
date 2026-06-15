@@ -7,6 +7,7 @@ import {
   SecondaryGrid,
   MoreReadingSection,
   QuoteSeparator,
+  ReflectionsSection,
 } from "@/components/home-sections";
 import { ShowMoreLink } from "@/components/common";
 import type { FrontendArticle } from "@/lib/frontend-types";
@@ -69,8 +70,10 @@ function arrangeSlots(articles: FrontendArticle[], slotCount: number): (Frontend
 
 export default async function HomePage() {
   const all = await getFrontendArticles();
+  const essays = all.filter((a) => a.kind !== "reflection");
+  const reflections = all.filter((a) => a.kind === "reflection");
 
-  const [featured, s1, s2, s3, a1, a2, b] = arrangeSlots(all, 7);
+  const [featured, s1, s2, s3, a1, a2, b] = arrangeSlots(essays, 7);
   if (!featured) {
     return (
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "80px 40px", textAlign: "center" }}>
@@ -92,6 +95,12 @@ export default async function HomePage() {
       )}
       <ShowMoreLink label="Browse all essays" accent={SITE.accent} href="/archive?tab=essays" />
       <QuoteSeparator quote={EPIGRAPH} accent={SITE.accent} />
+      {reflections.length > 0 && (
+        <>
+          <ReflectionsSection articles={reflections} accent={SITE.accent} tagMuted={SITE.tagMuted} />
+          <ShowMoreLink label="Browse all reflections" accent={SITE.accent} href="/archive?tab=reflections" />
+        </>
+      )}
     </main>
   );
 }

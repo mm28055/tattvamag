@@ -18,7 +18,7 @@ export default function NewArticlePage() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [tags, setTags] = useState("");
-  const [type, setType] = useState<"essay" | "note">("essay");
+  const [type, setType] = useState<"essay" | "reflection">("essay");
   const [illustrator, setIllustrator] = useState("");
   const [slug, setSlug] = useState("");
   const [displayOrder, setDisplayOrder] = useState("");
@@ -201,6 +201,13 @@ export default function NewArticlePage() {
             onChange={(e) => setTags(e.target.value)}
             style={inputStyle}
           />
+        </Field>
+
+        <Field label="Kind" help="Essay = informative writing (main homepage feed). Reflection = your own views and ideas (Reflections section + Archive tab).">
+          <select value={type} onChange={(e) => setType(e.target.value as "essay" | "reflection")} style={{ ...inputStyle, width: "220px" }}>
+            <option value="essay">Essay</option>
+            <option value="reflection">Reflection</option>
+          </select>
         </Field>
 
         <Field label="Author" required>

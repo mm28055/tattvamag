@@ -49,6 +49,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = await getFrontendArticleBySlug(slug);
   if (!article) return notFound();
   const all = await getFrontendArticles();
+  // Keep the infinite-scroll reading chain within the same kind: essays flow
+  // into essays, reflections into reflections — the two never intermix.
+  const sameKind = all.filter((a) => a.kind === article.kind);
 
   const articleSchema = {
     "@context": "https://schema.org",
@@ -82,7 +85,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       />
       <ArticleView
         startArticle={article}
-        allArticles={all}
+        allArticles={sameKind}
         accent={SITE.accent}
         tagMuted={SITE.tagMuted}
         measure={SITE.measure}

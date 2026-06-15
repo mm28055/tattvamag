@@ -340,6 +340,7 @@ function toFrontendArticle(a: Awaited<ReturnType<typeof getRawArticles>>[number]
     illustrationCredit: a.illustrator || undefined,
     fullBody,
     displayOrder: a.displayOrder ?? null,
+    kind: a.type === "reflection" ? "reflection" : "essay",
   };
 }
 

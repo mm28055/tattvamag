@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { FrontendArticle, FrontendNotebookEntry } from "@/lib/frontend-types";
+import type { FrontendArticle } from "@/lib/frontend-types";
 
 type Item = {
   id: string;
@@ -14,18 +14,18 @@ type Item = {
   tags: string[];
   author: string;
   readTime?: string;
-  kind: "essay" | "note";
+  kind: "essay" | "reflection";
 };
 
 export default function ArchiveView({
   articles,
-  notebookEntries,
+  reflections,
   accent,
   tagMuted,
   authorBios,
 }: {
   articles: FrontendArticle[];
-  notebookEntries: FrontendNotebookEntry[];
+  reflections: FrontendArticle[];
   accent: string;
   tagMuted: string;
   authorBios?: Record<string, string>;
@@ -33,11 +33,11 @@ export default function ArchiveView({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialTab = (searchParams.get("tab") === "notebook" ? "notebook" : "essays") as "essays" | "notebook";
+  const initialTab = (searchParams.get("tab") === "reflections" ? "reflections" : "essays") as "essays" | "reflections";
   const initialTag = searchParams.get("tag") || null;
   const initialAuthor = searchParams.get("author") || null;
 
-  const [tab, setTab] = useState<"essays" | "notebook">(initialTab);
+  const [tab, setTab] = useState<"essays" | "reflections">(initialTab);
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(initialTag);
   const [activeAuthor, setActiveAuthor] = useState<string | null>(initialAuthor);
@@ -51,27 +51,21 @@ export default function ArchiveView({
   }, [initialTab, initialTag, initialAuthor]);
 
   const source: Item[] = useMemo(
-    () =>
-      tab === "essays"
-        ? articles.map((a) => ({
-            id: a.slug,
-            title: a.title,
-            subtitle: a.subtitle,
-            body: a.body,
-            tags: a.tags,
-            author: a.author,
-            readTime: a.readTime,
-            kind: "essay" as const,
-          }))
-        : notebookEntries.map((n) => ({
-            id: n.id,
-            title: n.title,
-            body: typeof n.body === "string" ? n.body.split(/\n\n+/)[0] : (n.body[0] && "text" in n.body[0] ? (n.body[0] as { text: string }).text : ""),
-            tags: n.tags,
-            author: n.author,
-            kind: "note" as const,
-          })),
-    [tab, articles, notebookEntries],
+    () => {
+      const list = tab === "essays" ? articles : reflections;
+      const kind = tab === "essays" ? ("essay" as const) : ("reflection" as const);
+      return list.map((a) => ({
+        id: a.slug,
+        title: a.title,
+        subtitle: a.subtitle,
+        body: a.body,
+        tags: a.tags,
+        author: a.author,
+        readTime: a.readTime,
+        kind,
+      }));
+    },
+    [tab, articles, reflections],
   );
 
   const allTags = useMemo(() => [...new Set(source.flatMap((a) => a.tags))].sort(), [source]);
@@ -95,7 +89,7 @@ export default function ArchiveView({
     router.replace(`/archive?tab=${tab}`);
   };
 
-  const changeTab = (next: "essays" | "notebook") => {
+  const changeTab = (next: "essays" | "reflections") => {
     setTab(next);
     setActiveTag(null);
     setActiveAuthor(null);
@@ -103,7 +97,7 @@ export default function ArchiveView({
     router.replace(`/archive?tab=${next}`);
   };
 
-  const tabStyle = (key: "essays" | "notebook"): React.CSSProperties => ({
+  const tabStyle = (key: "essays" | "reflections"): React.CSSProperties => ({
     fontFamily: "'DM Sans', sans-serif",
     fontSize: "12px",
     letterSpacing: "0.22em",
@@ -124,7 +118,7 @@ export default function ArchiveView({
           The Archive
         </div>
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "40px", fontWeight: 500, color: "#1a1714", margin: 0, lineHeight: 1.15, fontStyle: "italic" }}>
-          Essays, notes, and fragments
+          Essays &amp; reflections
         </h2>
         <div style={{ width: "40px", height: "1.5px", background: accent, margin: "22px auto 0" }} />
       </div>
@@ -132,7 +126,7 @@ export default function ArchiveView({
       {/* Tabs */}
       <div style={{ display: "flex", justifyContent: "center", gap: "56px", borderBottom: "1px solid #d8d2c8", marginBottom: "28px" }}>
         <span onClick={() => changeTab("essays")} style={tabStyle("essays")}>Essays</span>
-        <span onClick={() => changeTab("notebook")} style={tabStyle("notebook")}>Notebook</span>
+        <span onClick={() => changeTab("reflections")} style={tabStyle("reflections")}>Reflections</span>
       </div>
 
       {/* Search + author */}
@@ -141,7 +135,7 @@ export default function ArchiveView({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${tab === "essays" ? "essays" : "notebook entries"}…`}
+            placeholder={`Search ${tab === "essays" ? "essays" : "reflections"}…`}
             style={{
               width: "100%",
               padding: "12px 16px 12px 40px",
@@ -303,8 +297,8 @@ export default function ArchiveView({
 
       {/* Result count */}
       <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: "#b0a89e", fontWeight: 500, marginBottom: "12px" }}>
-        {filtered.length} {tab === "essays" ? "essay" : "entry"}
-        {filtered.length === 1 ? "" : tab === "essays" ? "s" : "ies"}
+        {filtered.length} {tab === "essays" ? "essay" : "reflection"}
+        {filtered.length === 1 ? "" : "s"}
       </div>
 
       {/* Cards */}
@@ -351,7 +345,8 @@ function ArchiveCard({
     return cut.slice(0, lastSpace) + "…";
   })();
 
-  const href = (item.kind === "essay" ? `/${item.id}` : `/notebook#${item.id}`) as Route;
+  // Both essays and reflections are full articles → their own page at /[slug].
+  const href = `/${item.id}` as Route;
 
   return (
     <article

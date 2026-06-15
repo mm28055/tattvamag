@@ -57,7 +57,8 @@ export async function POST(req: Request) {
   const subtitle = String(form.get("subtitle") || "").trim();
   const categorySlug = String(form.get("category") || "").trim();
   const tagsRaw = String(form.get("tags") || "").trim();
-  const type = (String(form.get("type") || "essay").trim() === "note") ? "note" : "essay";
+  const typeRaw = String(form.get("type") || "essay").trim();
+  const type = typeRaw === "reflection" ? "reflection" : typeRaw === "note" ? "note" : "essay";
   const illustrator = String(form.get("illustrator") || "").trim();
   const customSlug = String(form.get("slug") || "").trim();
   const author = String(form.get("author") || "").trim() || "Manish Maheshwari";

@@ -146,7 +146,7 @@ export default async function AdminArticlesPage() {
                 fontSize: "10.5px",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                color: a.type === "note" ? "#B83A14" : "#8b7f72",
+                color: a.type === "reflection" || a.type === "note" ? "#B83A14" : "#8b7f72",
                 textAlign: "right",
               }}
             >

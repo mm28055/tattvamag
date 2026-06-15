@@ -14,7 +14,7 @@ const DEFAULT_CATEGORY = "history";
 
 type ArticleData = {
   slug: string;
-  type: "essay" | "note";
+  type: "essay" | "note" | "reflection";
   title: string;
   subtitle: string;
   author: string;
@@ -39,7 +39,7 @@ export default function AdminEditArticlePage() {
 
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [type, setType] = useState<"essay" | "note">("essay");
+  const [type, setType] = useState<"essay" | "reflection">("essay");
   const [tags, setTags] = useState("");
   const [illustrator, setIllustrator] = useState("");
   const [bodyHtml, setBodyHtml] = useState("");
@@ -68,7 +68,7 @@ export default function AdminEditArticlePage() {
         setData(a);
         setTitle(a.title);
         setSubtitle(a.subtitle || "");
-        setType(a.type === "note" ? "note" : "essay");
+        setType(a.type === "reflection" ? "reflection" : "essay");
         setTags(a.tags || "");
         setIllustrator(a.illustrator || "");
         setDisplayOrder(a.displayOrder == null ? "" : String(a.displayOrder));
@@ -207,6 +207,16 @@ export default function AdminEditArticlePage() {
           <Field label="Author" required>
             <select value={author} onChange={(e) => setAuthor(e.target.value)} style={inputStyle}>
               {authors.map((a) => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </Field>
+
+          <Field
+            label="Kind"
+            help="Essay = informative writing (shown in the main homepage feed). Reflection = your own views and ideas (shown in the Reflections section below the essays and under the Archive's Reflections tab)."
+          >
+            <select value={type} onChange={(e) => setType(e.target.value as "essay" | "reflection")} style={{ ...inputStyle, width: "220px" }}>
+              <option value="essay">Essay</option>
+              <option value="reflection">Reflection</option>
             </select>
           </Field>
 

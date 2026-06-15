@@ -6,7 +6,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
-  background: #F4E8D4;
+  background: #F9F5EC;
   color: #1a1714;
   font-family: "Source Serif 4", Georgia, serif;
   -webkit-font-smoothing: antialiased;

@@ -57,7 +57,7 @@ export default function SiteFooter() {
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "#C4B9A8" }}>
             <Link href="/" style={{ color: "inherit", textDecoration: "none" }}>Current</Link>
             <Link href="/archive" style={{ color: "inherit", textDecoration: "none" }}>Archive</Link>
-            <Link href="/notebook" style={{ color: "inherit", textDecoration: "none" }}>Notebook</Link>
+            <Link href="/reflections" style={{ color: "inherit", textDecoration: "none" }}>Reflections</Link>
             <Link href="/about" style={{ color: "inherit", textDecoration: "none" }}>About</Link>
             <a
               href="/rss.xml"

@@ -98,7 +98,7 @@ export default async function HomePage() {
       {reflections.length > 0 && (
         <>
           <ReflectionsSection articles={reflections} accent={SITE.accent} tagMuted={SITE.tagMuted} />
-          <ShowMoreLink label="Browse all reflections" accent={SITE.accent} href="/archive?tab=reflections" />
+          <ShowMoreLink label="Browse all reflections" accent={SITE.accent} href="/reflections" />
         </>
       )}
     </main>

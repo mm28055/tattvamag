@@ -26,6 +26,7 @@ export default function SiteHeader() {
         (!pathname.startsWith("/archive") &&
           !pathname.startsWith("/about") &&
           !pathname.startsWith("/notebook") &&
+          !pathname.startsWith("/reflections") &&
           !pathname.startsWith("/admin"))
       );
     }

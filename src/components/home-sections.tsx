@@ -411,21 +411,18 @@ export function ReflectionsSection({
   const shown = articles.slice(0, 4);
   return (
     <section style={{ paddingTop: "8px", paddingBottom: "16px" }}>
-      {/* Notebook-style intro: kicker, italic title, descriptive line, ornament. */}
-      <header style={{ maxWidth: "640px", margin: "16px auto 0", padding: "32px 40px 0", textAlign: "center" }}>
-        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.28em", textTransform: "uppercase", color: accent, fontWeight: 600, marginBottom: "14px" }}>
+      {/* Teaser header — the full intro lives on the /reflections page. */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "40px", marginBottom: "18px" }}>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: 500, color: "#1a1714", fontStyle: "italic" }}>
           Reflections
         </div>
-        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "36px", fontStyle: "italic", fontWeight: 500, color: "#1a1714", margin: 0, letterSpacing: "-0.01em", lineHeight: 1.15 }}>
-          Views, arguments, and ideas
-        </h2>
-        <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "16px", lineHeight: 1.7, color: "#6b6259", marginTop: "18px", maxWidth: "520px", marginLeft: "auto", marginRight: "auto" }}>
-          Personal essays — opinions and arguments on culture, tradition, and heritage.
-        </p>
-        <div style={{ width: "60px", height: "1px", background: accent, opacity: 0.3, margin: "26px auto 0" }} />
-      </header>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#b0a89e", fontWeight: 500 }}>
+          Views &amp; ideas
+        </div>
+      </div>
+      <div style={{ height: "1px", background: "#e2ddd5", marginBottom: "4px" }} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: "56px", marginTop: "20px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: "56px" }}>
         {shown.map((article, i) => (
           <ReflectionPreviewCard key={article.id} article={article} accent={accent} tagMuted={tagMuted} i={i} total={shown.length} />
         ))}

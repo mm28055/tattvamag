@@ -3,44 +3,43 @@ import { getFrontendArticles } from "@/lib/frontend-data";
 import { SITE } from "@/lib/site-config";
 import ArticleIndexView from "@/components/article-index-view";
 
-// ISR so newly published reflections appear without a fresh deploy.
+// ISR so newly published essays appear without a fresh deploy.
 export const revalidate = 300;
 
-const DESCRIPTION = "Personal essays — opinions and arguments on culture, tradition, and heritage.";
+const DESCRIPTION = "Researched essays on Hindu philosophy, history, and textual traditions.";
 
 export const metadata: Metadata = {
-  title: "Reflections",
+  title: "Essays",
   description: DESCRIPTION,
-  alternates: { canonical: "/reflections" },
+  alternates: { canonical: "/essays" },
   openGraph: {
-    title: "Reflections | Tattva",
+    title: "Essays | Tattva",
     description: DESCRIPTION,
-    url: "/reflections",
+    url: "/essays",
     type: "website",
     siteName: "Tattva",
     images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Tattva" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Reflections | Tattva",
+    title: "Essays | Tattva",
     description: DESCRIPTION,
     images: ["/og-image.jpg"],
   },
 };
 
-export default async function ReflectionsPage() {
+export default async function EssaysPage() {
   const all = await getFrontendArticles();
-  const reflections = all.filter((a) => a.kind === "reflection");
+  const essays = all.filter((a) => a.kind !== "reflection");
   return (
     <ArticleIndexView
-      items={reflections}
+      items={essays}
       accent={SITE.accent}
       tagMuted={SITE.tagMuted}
-      kicker="Reflections"
-      title="Views, arguments, and ideas"
+      kicker="Essays"
+      title="Histories, texts, and close readings"
       subtitle={DESCRIPTION}
-      italicTitles
-      emptyLabel="No reflections yet."
+      emptyLabel="No essays yet."
     />
   );
 }

@@ -1,33 +1,44 @@
 "use client";
-// Reflections index page: Notebook-style intro header + a single-column list of
-// reflection cards. Each card opens the full essay (/[slug]), whose reader then
-// infinite-scrolls through the rest of the reflections.
+// Shared section landing page (used by /essays and /reflections): a Notebook-
+// style intro header + a single-column list of cards. Each card opens the full
+// essay (/[slug]), whose reader then infinite-scrolls through the rest of the
+// same kind.
 import { useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import type { FrontendArticle } from "@/lib/frontend-types";
 
-export default function ReflectionsView({
-  reflections,
+export default function ArticleIndexView({
+  items,
   accent,
   tagMuted,
+  kicker,
+  title,
+  subtitle,
+  italicTitles = false,
+  emptyLabel = "Nothing here yet.",
 }: {
-  reflections: FrontendArticle[];
+  items: FrontendArticle[];
   accent: string;
   tagMuted: string;
+  kicker: string;
+  title: string;
+  subtitle: string;
+  italicTitles?: boolean;
+  emptyLabel?: string;
 }) {
   return (
     <main style={{ padding: "0 0 100px" }}>
       {/* Intro header — echoes the Notebook page. */}
       <header style={{ maxWidth: "720px", margin: "0 auto", padding: "48px 40px 56px", textAlign: "center" }}>
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", letterSpacing: "0.28em", textTransform: "uppercase", color: accent, fontWeight: 600, marginBottom: "14px" }}>
-          Reflections
+          {kicker}
         </div>
         <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "44px", fontStyle: "italic", fontWeight: 500, color: "#1a1714", margin: 0, letterSpacing: "-0.01em", lineHeight: 1.15 }}>
-          Views, arguments, and ideas
+          {title}
         </h1>
         <p style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: "16px", lineHeight: 1.7, color: "#6b6259", marginTop: "20px", maxWidth: "520px", marginLeft: "auto", marginRight: "auto" }}>
-          Personal essays — opinions and arguments on culture, tradition, and heritage.
+          {subtitle}
         </p>
       </header>
 
@@ -38,12 +49,12 @@ export default function ReflectionsView({
 
       {/* List */}
       <div style={{ maxWidth: "760px", margin: "0 auto", padding: "0 40px" }}>
-        {reflections.map((r) => (
-          <ReflectionCard key={r.id} article={r} accent={accent} tagMuted={tagMuted} />
+        {items.map((a) => (
+          <IndexCard key={a.id} article={a} accent={accent} tagMuted={tagMuted} italicTitle={italicTitles} />
         ))}
-        {reflections.length === 0 && (
+        {items.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 0", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "18px", color: "#8b7f72" }}>
-            No reflections yet.
+            {emptyLabel}
           </div>
         )}
       </div>
@@ -51,7 +62,7 @@ export default function ReflectionsView({
   );
 }
 
-function ReflectionCard({ article, accent, tagMuted }: { article: FrontendArticle; accent: string; tagMuted: string }) {
+function IndexCard({ article, accent, tagMuted, italicTitle }: { article: FrontendArticle; accent: string; tagMuted: string; italicTitle: boolean }) {
   const [hover, setHover] = useState(false);
   const excerpt = (() => {
     const t = article.body || "";
@@ -83,7 +94,7 @@ function ReflectionCard({ article, accent, tagMuted }: { article: FrontendArticl
           style={{
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: "30px",
-            fontStyle: "italic",
+            fontStyle: italicTitle ? "italic" : "normal",
             fontWeight: 500,
             color: hover ? accent : "#1a1714",
             margin: 0,

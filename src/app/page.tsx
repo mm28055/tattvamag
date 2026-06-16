@@ -93,7 +93,7 @@ export default async function HomePage() {
       {a1 && a2 && b && (
         <MoreReadingSection articles={[a1, a2, b]} accent={SITE.accent} tagMuted={SITE.tagMuted} />
       )}
-      <ShowMoreLink label="Browse all essays" accent={SITE.accent} href="/archive?tab=essays" />
+      <ShowMoreLink label="Browse all essays" accent={SITE.accent} href="/essays" />
       <QuoteSeparator quote={EPIGRAPH} accent={SITE.accent} />
       {reflections.length > 0 && (
         <>
